@@ -15,6 +15,13 @@ function allowedOrigins() {
     .filter(Boolean);
 }
 
+function authorizedParties() {
+  return (process.env.CLERK_AUTHORIZED_PARTIES ?? "https://www.tryonfashion.app")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
+
 function corsHeaders(origin: string | null) {
   const allowed = allowedOrigins();
   const permittedOrigin = origin && allowed.includes(origin) ? origin : "";
@@ -49,7 +56,9 @@ export async function POST(request: Request) {
   try {
     claims = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY,
-      authorizedParties: allowedOrigins(),
+      // Sync Host tokens are issued for the signed-in web app origin, not the
+      // chrome-extension:// origin used by the request's CORS check.
+      authorizedParties: authorizedParties(),
     });
   } catch {
     return NextResponse.json({ error: "Your sign-in expired. Sign in again and retry." }, { status: 401, headers });

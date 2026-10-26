@@ -64,7 +64,7 @@ The standalone Manifest V3 extension lives in `extension/` and uses Plasmo plus 
 
 1. Copy `extension/.env.development.example` to `extension/.env.development` and set the Clerk Chrome Extension publishable key, Clerk Frontend API URL, Clerk Sync Host, and API URL. For production builds, configure the equivalent values in `extension/.env.chrome`.
 2. In Clerk Dashboard, enable the **Native API**. Clerk's extension quickstart requires the Native API for browser extensions.
-3. Allow the exact extension origin (such as `chrome-extension://<id>`) in Clerk's instance allowed origins and set the web app's `CHROME_EXTENSION_ORIGINS` to the exact comma-separated origins for the unpacked and published extension IDs. The web app value is also checked against the Clerk token's authorized party claim.
+3. Allow the exact extension origin (such as `chrome-extension://<id>`) in Clerk's instance allowed origins and set the web app's `CHROME_EXTENSION_ORIGINS` to the exact comma-separated origins for the unpacked and published extension IDs. Set the web app's `CLERK_AUTHORIZED_PARTIES` to the web app origin(s) that issue the synced Clerk session token (for production, `https://www.tryonfashion.app`). These are separate checks: the extension origin is for CORS, while the web app origin is the token's authorized party (`azp`).
 4. Create and keep a stable CRX key; set `CRX_PUBLIC_KEY` in `extension/.env.chrome` and keep the matching extension ID in `CHROME_EXTENSION_ORIGINS`. Do not commit key files.
 5. In `extension/`, run `npm install`, `npm run dev`, then load `extension/build/chrome-mv3-dev` through `chrome://extensions` with Developer mode enabled. Production builds use `npm run build`.
 
