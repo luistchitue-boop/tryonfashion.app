@@ -62,11 +62,13 @@ Google sign-in is configured through Clerk. This app no longer hosts a `/api/aut
 
 The standalone Manifest V3 extension lives in `extension/` and uses Plasmo plus Clerk's Chrome Extension SDK. It reads product JSON-LD/Open Graph metadata from the active tab, lets the user review/edit it, and saves through `POST /api/extension/closet` with a verified Clerk bearer token.
 
-1. Copy `extension/.env.development.example` to `extension/.env.development` and set the Clerk Chrome Extension publishable key, Clerk Frontend API URL, and API URL.
+1. Copy `extension/.env.development.example` to `extension/.env.development` and set the Clerk Chrome Extension publishable key, Clerk Frontend API URL, Clerk Sync Host, and API URL. For production builds, configure the equivalent values in `extension/.env.chrome`.
 2. In Clerk Dashboard, enable the **Native API**. Clerk's extension quickstart requires the Native API for browser extensions.
-3. Set the web app's `CHROME_EXTENSION_ORIGINS` to the exact comma-separated origins for the unpacked and published extension IDs, such as `chrome-extension://<id>`. These same origins are checked against the Clerk token's authorized party claim.
+3. Allow the exact extension origin (such as `chrome-extension://<id>`) in Clerk's instance allowed origins and set the web app's `CHROME_EXTENSION_ORIGINS` to the exact comma-separated origins for the unpacked and published extension IDs. The web app value is also checked against the Clerk token's authorized party claim.
 4. Create and keep a stable CRX key; set `CRX_PUBLIC_KEY` in `extension/.env.chrome` and keep the matching extension ID in `CHROME_EXTENSION_ORIGINS`. Do not commit key files.
 5. In `extension/`, run `npm install`, `npm run dev`, then load `extension/build/chrome-mv3-dev` through `chrome://extensions` with Developer mode enabled. Production builds use `npm run build`.
+
+The extension opens the app's `/sign-in` page for authentication. Clerk Sync Host shares that web session with the extension; after signing in on the website, reopen the extension. Chrome does not allow an extension popup to automatically reopen itself after the web sign-in tab completes.
 
 The extension intentionally requires an explicit user click and review before saving. It does not crawl pages in the background; it uses `activeTab` access to extract structured product metadata from the currently open page.
 

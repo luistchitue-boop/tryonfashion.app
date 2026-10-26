@@ -1,4 +1,4 @@
-import { ClerkProvider, SignedIn, SignedOut, SignInButton, SignOutButton, useAuth, useUser } from "@clerk/chrome-extension";
+import { ClerkProvider, SignedIn, SignedOut, SignOutButton, useAuth, useUser } from "@clerk/chrome-extension";
 import { useEffect, useState } from "react";
 import "./style.css";
 
@@ -14,6 +14,7 @@ type ProductDetails = {
 
 const API_URL = process.env.PLASMO_PUBLIC_API_URL || "https://www.tryonfashion.app";
 const CLERK_KEY = process.env.PLASMO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+const CLERK_SYNC_HOST = process.env.PLASMO_PUBLIC_CLERK_SYNC_HOST;
 const EXTENSION_URL = typeof chrome !== "undefined" ? chrome.runtime.getURL(".") : "";
 
 function extractFromActiveTab(): Promise<ProductDetails | null> {
@@ -135,6 +136,7 @@ function PopupContent() {
   };
 
   const openCloset = () => void chrome.tabs.create({ url: `${API_URL}/closet` });
+  const signInOnWeb = () => void chrome.tabs.create({ url: `${API_URL}/sign-in?callbackUrl=%2Fcloset` });
 
   if (!CLERK_KEY) return <main className="state"><strong>Extension setup needed</strong><p>Add the Clerk publishable key to the extension environment.</p></main>;
   if (!isLoaded) return <main className="state"><span className="spinner" />Getting your closet ready…</main>;
@@ -151,8 +153,8 @@ function PopupContent() {
         <section className="welcome">
           <div className="eyebrow">YOUR PERSONAL CLOSET</div>
           <h1>Find something<br />you love?</h1>
-          <p>Sign in to save clothing directly from the store you&apos;re browsing.</p>
-          <SignInButton mode="modal"><button className="primary-button full">Continue with Google</button></SignInButton>
+          <p>Sign in securely on TryOnFashion, then reopen this extension to save the item.</p>
+          <button className="primary-button full" onClick={signInOnWeb}>Sign in on TryOnFashion</button>
         </section>
       </SignedOut>
 
@@ -198,6 +200,7 @@ export default function IndexPopup() {
   return (
     <ClerkProvider
       publishableKey={CLERK_KEY}
+      syncHost={CLERK_SYNC_HOST}
       afterSignOutUrl={`${EXTENSION_URL}/popup.html`}
       signInFallbackRedirectUrl={`${EXTENSION_URL}/popup.html`}
       signUpFallbackRedirectUrl={`${EXTENSION_URL}/popup.html`}
