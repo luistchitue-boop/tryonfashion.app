@@ -39,10 +39,10 @@ DATABASE_URL=postgresql://postgres:postgres@localhost:5432/tryonfashion?schema=p
 
 1. Ensure PostgreSQL is running locally or in a managed database.
 2. Create a database named `tryonfashion` (or change the `DATABASE_URL` to match your existing database).
-3. Run the Prisma migration:
+3. Apply the committed migrations:
 
 ```bash
-npx prisma migrate dev --name init
+npx prisma migrate dev
 ```
 
 4. Regenerate the Prisma client if needed:
@@ -56,7 +56,15 @@ npx prisma generate
 1. Create a Clerk application and copy its publishable and secret keys into `.env`.
 2. In Clerk Dashboard, enable Google as a social connection. Clerk handles the Google OAuth callback; configure Google credentials and the authorized redirect URI shown in Clerk's Google connection setup if using your own Google OAuth credentials.
 3. Add your local and production application domains in Clerk's allowed origins and redirect settings.
-4. For an existing database, review the Prisma schema update and run `npx prisma db push` to add the nullable unique Clerk ID column without deleting saved items.
+4. Production deployments use `prisma migrate deploy` through the `vercel-build` script.
+
+If a deployment reports `P3018` for `20261026000000_add_clerk_id` with `relation "User" does not exist`, verify that Vercel's `DATABASE_URL` points to the intended database and schema. This means no baseline tables exist in that target. With the baseline migration committed, mark the failed attempt as rolled back against that same database, then redeploy so Prisma applies the baseline and Clerk ID migrations in order:
+
+```bash
+npx prisma migrate resolve --rolled-back 20261026000000_add_clerk_id
+```
+
+Run those recovery commands only after confirming the target database; do not use `migrate reset` on production.
 
 Google sign-in is configured through Clerk. This app no longer hosts a `/api/auth/callback/google` endpoint.
 
