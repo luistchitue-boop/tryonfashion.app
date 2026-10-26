@@ -1,17 +1,17 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { ClosetClient } from "@/components/closet-client";
 import { prisma } from "@/lib/prisma";
 
 export default async function ClosetPage() {
-  const session = await auth();
+  const user = await getAuthenticatedUser();
 
-  if (!session?.user?.id) {
+  if (!user) {
     redirect("/sign-in?callbackUrl=/closet");
   }
 
   const savedItems = await prisma.savedItem.findMany({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
     orderBy: { createdAt: "desc" },
   });
 
@@ -28,8 +28,8 @@ export default async function ClosetPage() {
         source: item.source,
         createdAt: item.createdAt.toISOString(),
       }))}
-      userName={session.user.name ?? "Fashion lover"}
-      userImage={session.user.image ?? null}
+      userName={user.name ?? "Fashion lover"}
+      userImage={user.image ?? null}
     />
   );
 }

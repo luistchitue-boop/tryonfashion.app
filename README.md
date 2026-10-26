@@ -1,12 +1,12 @@
 # TryOnFashion
 
-TryOnFashion is a premium fashion discovery and closet app built with Next.js, App Router, Tailwind CSS, NextAuth, Prisma, and PostgreSQL. The product lets users discover looks from fashion websites, save items to a personal digital closet, and prepare for future virtual try-on experiences.
+TryOnFashion is a premium fashion discovery and closet app built with Next.js, App Router, Tailwind CSS, Clerk, Prisma, and PostgreSQL. The product lets users discover looks from fashion websites, save items to a personal digital closet, and prepare for future virtual try-on experiences.
 
 ## Stack
 
 - Next.js 16 with App Router and TypeScript
 - Tailwind CSS
-- NextAuth v4 with Google OAuth
+- Clerk authentication with Google sign-in
 - Prisma ORM with PostgreSQL
 - React Hook Form + Zod for validation
 - Lucide icons
@@ -30,11 +30,9 @@ cp .env.example .env
 Required variables:
 
 ```bash
-AUTH_SECRET=replace-with-a-long-random-secret
-AUTH_GOOGLE_ID=your-google-client-id
-AUTH_GOOGLE_SECRET=your-google-client-secret
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_replace-with-your-clerk-publishable-key
+CLERK_SECRET_KEY=sk_test_replace-with-your-clerk-secret-key
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/tryonfashion?schema=public
-NEXTAUTH_URL=http://localhost:3000
 ```
 
 ## PostgreSQL setup
@@ -53,21 +51,14 @@ npx prisma migrate dev --name init
 npx prisma generate
 ```
 
-## Google OAuth setup
+## Clerk and Google sign-in setup
 
-1. Go to the Google Cloud Console.
-2. Create or select a project.
-3. Enable the Google OAuth consent screen.
-4. Create OAuth 2.0 Client ID credentials.
-5. Add the following authorized redirect URI in Google Console:
+1. Create a Clerk application and copy its publishable and secret keys into `.env`.
+2. In Clerk Dashboard, enable Google as a social connection. Clerk handles the Google OAuth callback; configure Google credentials and the authorized redirect URI shown in Clerk's Google connection setup if using your own Google OAuth credentials.
+3. Add your local and production application domains in Clerk's allowed origins and redirect settings.
+4. For an existing database, review the Prisma schema update and run `npx prisma db push` to add the nullable unique Clerk ID column without deleting saved items.
 
-```text
-http://localhost:3000/api/auth/callback/google
-```
-
-For production, add the production domain plus `/api/auth/callback/google`.
-
-6. Copy the Client ID and Secret into `AUTH_GOOGLE_ID` and `AUTH_GOOGLE_SECRET`.
+Google sign-in is configured through Clerk. This app no longer hosts a `/api/auth/callback/google` endpoint.
 
 ## Running the app
 

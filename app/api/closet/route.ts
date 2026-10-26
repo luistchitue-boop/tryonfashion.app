@@ -1,16 +1,16 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { savedItemSchema } from "@/lib/validations";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const user = await getAuthenticatedUser();
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const items = await prisma.savedItem.findMany({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
     orderBy: { createdAt: "desc" },
   });
 
@@ -18,8 +18,8 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const user = await getAuthenticatedUser();
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   const data = parsed.data;
   const item = await prisma.savedItem.create({
     data: {
-      userId: session.user.id,
+      userId: user.id,
       productName: data.productName,
       brand: data.brand && data.brand.trim() ? data.brand.trim() : null,
       productUrl: data.productUrl,
@@ -48,8 +48,8 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const user = await getAuthenticatedUser();
+  if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -65,7 +65,7 @@ export async function DELETE(request: Request) {
     select: { userId: true },
   });
 
-  if (!item || item.userId !== session.user.id) {
+  if (!item || item.userId !== user.id) {
     return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   }
 

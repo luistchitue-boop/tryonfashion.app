@@ -3,15 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { auth } from "@/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { savedItemSchema } from "@/lib/validations";
 
 const createSavedItemSchema = savedItemSchema;
 
 export async function createSavedItem(input: z.infer<typeof createSavedItemSchema>) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const user = await getAuthenticatedUser();
+  if (!user) {
     throw new Error("You must be signed in to save a piece.");
   }
 
@@ -27,7 +27,7 @@ export async function createSavedItem(input: z.infer<typeof createSavedItemSchem
 
   const item = await prisma.savedItem.create({
     data: {
-      userId: session.user.id,
+      userId: user.id,
       productName: data.productName,
       brand: data.brand && data.brand.trim() ? data.brand.trim() : null,
       productUrl: productUrl,
@@ -45,8 +45,8 @@ export async function createSavedItem(input: z.infer<typeof createSavedItemSchem
 }
 
 export async function deleteSavedItem(id: string) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const user = await getAuthenticatedUser();
+  if (!user) {
     throw new Error("You must be signed in to remove a piece.");
   }
 
@@ -55,7 +55,7 @@ export async function deleteSavedItem(id: string) {
     select: { userId: true },
   });
 
-  if (!item || item.userId !== session.user.id) {
+  if (!item || item.userId !== user.id) {
     throw new Error("You are not allowed to remove this item.");
   }
 
@@ -64,13 +64,13 @@ export async function deleteSavedItem(id: string) {
 }
 
 export async function getClosetItems() {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const user = await getAuthenticatedUser();
+  if (!user) {
     return [];
   }
 
   return prisma.savedItem.findMany({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
     orderBy: { createdAt: "desc" },
   });
 }

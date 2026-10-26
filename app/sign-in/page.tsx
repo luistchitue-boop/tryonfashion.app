@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { GoogleSignInButton } from "@/components/google-signin-button";
+import { SignIn } from "@clerk/nextjs";
 
 export default function SignInPage() {
   return (
@@ -12,8 +12,8 @@ export default function SignInPage() {
           Sign in to access your personal closet and save the looks you&apos;re drawn to.
         </p>
 
-        <div className="mt-8 flex flex-col gap-4">
-          <GoogleSignInButton label="Continue with Google" />
+        <div className="mt-8 flex justify-center">
+          <SignIn routing="hash" forceRedirectUrl="/closet" />
         </div>
 
         <div className="mt-6 border-t border-stone-200 pt-5 text-sm text-stone-600">

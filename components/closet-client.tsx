@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { SignOutButton } from "@clerk/nextjs";
 import { ArrowUpRight, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -169,11 +170,11 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
                 <p className="text-xs text-stone-500">Curator</p>
               </div>
             </div>
-            <form action="/api/auth/signout" method="post" className="mt-4">
-              <Button type="submit" variant="secondary" className="w-full justify-center">
+            <SignOutButton redirectUrl="/">
+              <Button type="button" variant="secondary" className="w-full justify-center">
                 Sign out
               </Button>
-            </form>
+            </SignOutButton>
           </div>
         </aside>
 

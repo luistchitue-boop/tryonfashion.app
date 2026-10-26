@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ClerkProvider } from "@clerk/nextjs";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import "./globals.css";
 
@@ -21,7 +22,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${manrope.variable} ${cormorant.variable} h-full antialiased`}>
-      <body className="min-h-full bg-stone-50 text-stone-900">{children}</body>
+      <body className="min-h-full bg-stone-50 text-stone-900">
+        <ClerkProvider>{children}</ClerkProvider>
+      </body>
     </html>
   );
 }

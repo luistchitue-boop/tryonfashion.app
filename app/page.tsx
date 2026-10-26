@@ -39,7 +39,7 @@ export default function Home() {
             Sign in
           </Link>
           <Link
-            href="/api/auth/signin/google?callbackUrl=/closet"
+            href="/sign-in"
             className="inline-flex items-center justify-center rounded-full bg-stone-900 px-5 py-2.5 text-sm font-medium text-white transition hover:bg-stone-700"
           >
             Get started
