@@ -1,13 +1,13 @@
 # TryOnFashion
 
-TryOnFashion is a premium fashion discovery and closet app built with Next.js, App Router, Tailwind CSS, Clerk, Prisma, and PostgreSQL. The product lets users discover looks from fashion websites, save items to a personal digital closet, and prepare for future virtual try-on experiences.
+TryOnFashion is a premium fashion discovery and closet app built with Next.js, App Router, Tailwind CSS, Clerk, Drizzle ORM, and Neon PostgreSQL. The product lets users discover looks from fashion websites, save items to a personal digital closet, and prepare for future virtual try-on experiences.
 
 ## Stack
 
 - Next.js 16 with App Router and TypeScript
 - Tailwind CSS
 - Clerk authentication with Google sign-in
-- Prisma ORM with PostgreSQL
+- Drizzle ORM with Neon PostgreSQL
 - React Hook Form + Zod for validation
 - Lucide icons
 
@@ -32,40 +32,25 @@ Required variables:
 ```bash
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_replace-with-your-clerk-publishable-key
 CLERK_SECRET_KEY=sk_test_replace-with-your-clerk-secret-key
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/tryonfashion?schema=public
+DATABASE_URL=your-neon-postgres-connection-string
 ```
 
-## PostgreSQL setup
+## Neon database setup
 
-1. Ensure PostgreSQL is running locally or in a managed database.
-2. Create a database named `tryonfashion` (or change the `DATABASE_URL` to match your existing database).
-3. Apply the committed migrations:
+1. Copy the connection string from your Neon project and set it as `DATABASE_URL` locally and in Vercel. A Neon pooled connection URL is supported by the app's Neon serverless driver.
+2. Apply the committed Drizzle migration:
 
 ```bash
-npx prisma migrate dev
+npm run db:migrate
 ```
 
-4. Regenerate the Prisma client if needed:
-
-```bash
-npx prisma generate
-```
+Vercel runs the same migration automatically through `npm run vercel-build`. The initial migration creates the app's tables, including `User` and `SavedItem`.
 
 ## Clerk and Google sign-in setup
 
 1. Create a Clerk application and copy its publishable and secret keys into `.env`.
 2. In Clerk Dashboard, enable Google as a social connection. Clerk handles the Google OAuth callback; configure Google credentials and the authorized redirect URI shown in Clerk's Google connection setup if using your own Google OAuth credentials.
 3. Add your local and production application domains in Clerk's allowed origins and redirect settings.
-4. Production deployments use `prisma migrate deploy` through the `vercel-build` script.
-
-If a deployment reports `P3018` for `20261026000000_add_clerk_id` with `relation "User" does not exist`, verify that Vercel's `DATABASE_URL` points to the intended database and schema. This means no baseline tables exist in that target. With the baseline migration committed, mark the failed attempt as rolled back against that same database, then redeploy so Prisma applies the baseline and Clerk ID migrations in order:
-
-```bash
-npx prisma migrate resolve --rolled-back 20261026000000_add_clerk_id
-```
-
-Run those recovery commands only after confirming the target database; do not use `migrate reset` on production.
-
 Google sign-in is configured through Clerk. This app no longer hosts a `/api/auth/callback/google` endpoint.
 
 ## Running the app
@@ -84,13 +69,14 @@ Open http://localhost:3000 to view the app.
 npm run lint
 npm run typecheck
 npm run build
-npx prisma migrate dev --name init
-npx prisma studio
+npm run db:generate
+npm run db:migrate
+npm run db:studio
 ```
 
 ## Notes
 
 - Public routes include the landing page and informational pages.
 - The `/closet` route is protected and requires a valid Google sign-in session.
-- The app stores saved items in PostgreSQL and scopes each query to the authenticated user.
+- The app stores saved items in Neon PostgreSQL through Drizzle and scopes each query to the authenticated user.
 - Metadata extraction for product URLs is best-effort and should always be reviewed by the user before saving.
