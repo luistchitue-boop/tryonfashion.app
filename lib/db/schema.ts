@@ -93,3 +93,18 @@ export const savedItems = pgTable(
     index("SavedItem_userId_productName_idx").on(table.userId, table.productName),
   ],
 );
+
+export const galleryPhotos = pgTable(
+  "GalleryPhoto",
+  {
+    id: text("id").primaryKey(),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
+    pathname: text("pathname").notNull().unique(),
+    filename: text("filename").notNull(),
+    contentType: text("contentType").notNull(),
+    createdAt: timestamp("createdAt", { precision: 3, mode: "date" }).notNull().defaultNow(),
+  },
+  (table) => [index("GalleryPhoto_userId_createdAt_idx").on(table.userId, table.createdAt)],
+);

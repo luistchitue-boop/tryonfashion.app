@@ -33,6 +33,7 @@ Required variables:
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_replace-with-your-clerk-publishable-key
 CLERK_SECRET_KEY=sk_test_replace-with-your-clerk-secret-key
 DATABASE_URL=your-neon-postgres-connection-string
+BLOB_READ_WRITE_TOKEN=provided-by-vercel-blob
 ```
 
 ## Neon database setup
@@ -45,6 +46,10 @@ npm run db:migrate
 ```
 
 Vercel runs the same migration automatically through `npm run vercel-build`. The initial migration creates the app's tables, including `User` and `SavedItem`.
+
+## Personal photo gallery
+
+Connect a Vercel Blob store to the project and enable it for Production, Preview, and Development as needed. Vercel provides `BLOB_READ_WRITE_TOKEN` (or its OIDC Blob connection variables) automatically. Gallery uploads are private, tied to the signed-in user in Neon, and served back through an authenticated route. Users can upload JPEG, PNG, WebP, or AVIF photos up to 4 MB each, preview them, and delete them. The Drizzle migration adds the `GalleryPhoto` table.
 
 ## Clerk and Google sign-in setup
 
