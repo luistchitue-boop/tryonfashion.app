@@ -45,6 +45,7 @@ yarn-error.log*
 /extension/.env.development
 /extension/.env.chrome
 /extension/.env.production
+!/extension/.env.*.example
 
 # typescript
 *.tsbuildinfo
