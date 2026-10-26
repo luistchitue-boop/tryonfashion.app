@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
-import { SignIn } from "@clerk/nextjs";
+import { SignIn, SignOutButton } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 
 export default function SignInPage() {
   return (
@@ -14,6 +15,14 @@ export default function SignInPage() {
 
         <div className="mt-8 flex justify-center">
           <SignIn routing="hash" forceRedirectUrl="/closet" />
+        </div>
+
+        <div className="mt-4 flex justify-center">
+          <SignOutButton redirectUrl="/">
+            <Button type="button" variant="ghost" size="sm">
+              Sign out
+            </Button>
+          </SignOutButton>
         </div>
 
         <div className="mt-6 border-t border-stone-200 pt-5 text-sm text-stone-600">

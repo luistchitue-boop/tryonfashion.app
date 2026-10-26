@@ -186,9 +186,16 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight text-stone-900">My Closet</h1>
                 <p className="mt-2 max-w-xl text-sm text-stone-600">Everything you&apos;ve discovered, saved, and want to try.</p>
               </div>
-              <Button onClick={() => setDialogOpen(true)} className="w-fit">
-                Add a piece
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => setDialogOpen(true)} className="w-fit">
+                  Add a piece
+                </Button>
+                <SignOutButton redirectUrl="/">
+                  <Button type="button" variant="secondary" className="w-fit lg:hidden">
+                    Sign out
+                  </Button>
+                </SignOutButton>
+              </div>
             </div>
 
             <div className="flex flex-col gap-3 border-t border-stone-200 pt-4 md:flex-row md:items-center md:justify-between">
