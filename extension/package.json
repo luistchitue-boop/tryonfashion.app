@@ -42,7 +42,8 @@
       "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' data: https:"
     },
     "action": {
-      "default_title": "Save to TryOnFashion"
+      "default_title": "Save to TryOnFashion",
+      "default_popup": "popup.html"
     }
   }
 }
