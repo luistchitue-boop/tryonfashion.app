@@ -35,7 +35,7 @@ export default function Home() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link href="/sign-in" className="hidden text-sm font-medium text-stone-700 md:inline-flex">
+          <Link href="/sign-in" className="inline-flex text-sm font-medium text-stone-700 md:hidden">
             Sign in
           </Link>
           <Link
