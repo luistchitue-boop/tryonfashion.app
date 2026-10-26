@@ -1,0 +1,48 @@
+{
+  "name": "tryonfashion-extension",
+  "displayName": "TryOnFashion Save to Closet",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "plasmo dev",
+    "build": "plasmo build",
+    "package": "plasmo package"
+  },
+  "dependencies": {
+    "@clerk/chrome-extension": "^2.0.0",
+    "plasmo": "^0.90.5",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.0.0"
+  },
+  "manifest": {
+    "name": "TryOnFashion — Save to Closet",
+    "description": "Save clothing pieces from stores to your TryOnFashion closet.",
+    "version": "0.1.0",
+    "permissions": [
+      "activeTab",
+      "scripting",
+      "storage",
+      "cookies"
+    ],
+    "host_permissions": [
+      "https://www.tryonfashion.app/*",
+      "https://clerk.tryonfashion.app/*",
+      "https://*.clerk.accounts.dev/*",
+      "http://localhost:3000/*"
+    ],
+    "key": "$CRX_PUBLIC_KEY",
+    "content_security_policy": {
+      "extension_pages": "script-src 'self'; object-src 'self'; img-src 'self' data: https:"
+    },
+    "action": {
+      "default_title": "Save to TryOnFashion"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+* { box-sizing: border-box; }
+:root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #292521; background: #f8f6f2; font-synthesis: none; text-rendering: optimizeLegibility; }
+body { width: 390px; min-height: 520px; margin: 0; background: #f8f6f2; }
+button, input { font: inherit; }
+button { cursor: pointer; }
+button:disabled { cursor: wait; opacity: .6; }
+.popup { min-height: 520px; display: flex; flex-direction: column; padding: 18px 20px 14px; }
+.topbar { display: flex; align-items: center; gap: 11px; padding-bottom: 17px; border-bottom: 1px solid #e9e4dc; }
+.brand-mark { width: 37px; height: 37px; display: grid; place-items: center; border-radius: 13px; background: #292521; color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+.brand-copy { display: flex; flex: 1; flex-direction: column; gap: 3px; }
+.brand-copy strong { font-size: 10px; letter-spacing: .16em; }
+.brand-copy span { color: #89837b; font-size: 11px; }
+.quiet-button, .link-button { border: 0; background: transparent; color: #777168; font-size: 11px; }
+.welcome { display: flex; flex: 1; flex-direction: column; justify-content: center; padding: 42px 7px; }
+.eyebrow, .user-line { color: #8b765e; font-size: 10px; font-weight: 650; letter-spacing: .17em; text-transform: uppercase; }
+h1 { margin: 10px 0 0; color: #28231f; font-family: Georgia, "Times New Roman", serif; font-size: 34px; font-weight: 500; letter-spacing: -.04em; line-height: 1.06; }
+.welcome p, .empty p { margin: 12px 0 23px; color: #746e65; font-size: 13px; line-height: 1.65; }
+.primary-button { min-height: 43px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 999px; background: #292521; color: white; font-size: 12px; font-weight: 600; transition: background .15s ease; }
+.primary-button:hover:not(:disabled) { background: #4a443e; }
+.full { width: 100%; }
+.content { flex: 1; padding-top: 19px; }
+.content h1 { margin-top: 6px; font-size: 28px; }
+.preview-card { margin-top: 17px; overflow: hidden; border: 1px solid #e9e4dc; border-radius: 19px; background: #fff; }
+.product-image, .image-placeholder { width: 100%; height: 175px; display: block; object-fit: cover; background: #eeece8; }
+.image-placeholder { display: grid; place-items: center; color: #89837b; font-size: 12px; }
+.form-fields { display: grid; gap: 11px; padding: 14px; }
+.form-fields label { display: grid; gap: 5px; color: #777168; font-size: 10px; font-weight: 600; }
+.form-fields input { width: 100%; min-width: 0; height: 35px; border: 1px solid #e8e3dc; border-radius: 9px; padding: 0 10px; outline: 0; background: #fdfcfb; color: #302b26; font-size: 11px; }
+.form-fields input:focus { border-color: #a79680; box-shadow: 0 0 0 2px #a7968022; }
+.two-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.detail-row { display: flex; justify-content: space-between; padding: 9px 2px 12px; color: #8b8379; font-size: 10px; }
+.feedback { margin: 9px 0 0; color: #a33c36; text-align: center; font-size: 11px; }
+.feedback.success { color: #357358; }
+.link-button { display: flex; width: 100%; justify-content: center; gap: 5px; margin-top: 14px; padding: 5px; }
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 280px; padding: 25px; text-align: center; }
+.empty-icon { width: 45px; height: 45px; display: grid; place-items: center; margin-bottom: 13px; border-radius: 50%; background: #eeebe5; font-size: 19px; }
+.empty strong { font-family: Georgia, serif; font-size: 21px; font-weight: 500; }
+.empty p { margin: 8px 0 0; font-size: 12px; }
+.state { min-height: 520px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; padding: 24px; text-align: center; }
+.state p { max-width: 280px; margin: 0; color: #746e65; font-size: 12px; line-height: 1.55; }
+.state.inline { min-height: 260px; flex-direction: row; color: #746e65; font-size: 12px; }
+.spinner { width: 17px; height: 17px; border: 2px solid #ddd5c9; border-top-color: #665844; border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+footer { padding-top: 13px; border-top: 1px solid #e9e4dc; color: #a49d94; text-align: center; font-size: 9px; }

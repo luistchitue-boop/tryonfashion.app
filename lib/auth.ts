@@ -10,27 +10,39 @@ export async function getAuthenticatedUser() {
   const clerkUser = await currentUser();
   if (!clerkUser) return null;
 
-  const email = clerkUser.primaryEmailAddress?.emailAddress ?? null;
-  const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") || null;
+  return syncClerkUser({
+    clerkId: userId,
+    email: clerkUser.primaryEmailAddress?.emailAddress ?? null,
+    name: [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(" ") || null,
+    image: clerkUser.imageUrl,
+  });
+}
+
+export async function syncClerkUser(profile: {
+  clerkId: string;
+  email: string | null;
+  name: string | null;
+  image: string | null;
+}) {
   const db = getDb();
-  const [existingUser] = await db.select().from(users).where(eq(users.clerkId, userId)).limit(1);
+  const [existingUser] = await db.select().from(users).where(eq(users.clerkId, profile.clerkId)).limit(1);
 
   if (existingUser) {
     const [updatedUser] = await db
       .update(users)
-      .set({ email, name, image: clerkUser.imageUrl, updatedAt: new Date() })
+      .set({ email: profile.email, name: profile.name, image: profile.image, updatedAt: new Date() })
       .where(eq(users.id, existingUser.id))
       .returning();
     return updatedUser;
   }
 
-  const [userWithSameEmail] = email
-    ? await db.select().from(users).where(eq(users.email, email)).limit(1)
+  const [userWithSameEmail] = profile.email
+    ? await db.select().from(users).where(eq(users.email, profile.email)).limit(1)
     : [];
   if (userWithSameEmail) {
     const [updatedUser] = await db
       .update(users)
-      .set({ clerkId: userId, name, image: clerkUser.imageUrl, updatedAt: new Date() })
+      .set({ clerkId: profile.clerkId, name: profile.name, image: profile.image, updatedAt: new Date() })
       .where(eq(users.id, userWithSameEmail.id))
       .returning();
     return updatedUser;
@@ -38,7 +50,7 @@ export async function getAuthenticatedUser() {
 
   const [createdUser] = await db
     .insert(users)
-    .values({ id: crypto.randomUUID(), clerkId: userId, email, name, image: clerkUser.imageUrl })
+    .values({ id: crypto.randomUUID(), ...profile })
     .returning();
   return createdUser;
 }
