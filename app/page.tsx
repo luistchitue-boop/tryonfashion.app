@@ -27,18 +27,7 @@ export default function Home() {
           TRYONFASHION
         </Link>
 
-        <nav className="hidden items-center gap-8 text-sm text-stone-600 md:flex">
-          <Link href="#how-it-works">How it works</Link>
-          <Link href="#about">About</Link>
-          <Link href="/sign-in" className="transition hover:text-stone-900">
-            Sign in
-          </Link>
-        </nav>
-
         <div className="flex items-center gap-3">
-          <Link href="/sign-in" className="inline-flex text-sm font-medium text-stone-700 md:hidden">
-            Sign in
-          </Link>
           <HomeAuthAction />
         </div>
       </header>
