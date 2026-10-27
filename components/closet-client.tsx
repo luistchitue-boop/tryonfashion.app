@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { SignOutButton } from "@clerk/nextjs";
@@ -31,6 +31,7 @@ type ClosetClientProps = {
 export function ClosetClient({ initialItems, userName, userImage }: ClosetClientProps) {
   const [items, setItems] = useState(initialItems);
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
   const [sourceFilter, setSourceFilter] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
   const [currentPage, setCurrentPage] = useState(1);
@@ -54,7 +55,7 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
   );
 
   const filteredItems = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalizedQuery = deferredQuery.trim().toLowerCase();
     return [...items]
       .filter((item) => {
         const matchesQuery =
@@ -70,7 +71,7 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
         }
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       });
-  }, [items, query, sortBy, sourceFilter]);
+  }, [items, deferredQuery, sortBy, sourceFilter]);
 
   const pageCount = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
   const activePage = Math.min(currentPage, pageCount);
@@ -142,7 +143,7 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900">
-      <div className="mx-auto flex max-w-7xl gap-8 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl gap-4 px-3 py-5 sm:gap-8 sm:px-6 sm:py-6 lg:px-8">
         <aside className="hidden w-64 shrink-0 rounded-2xl border border-stone-200 bg-white p-5 lg:block">
           <div className="mb-8 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-sm font-semibold text-stone-50">
@@ -191,8 +192,8 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
           </div>
         </aside>
 
-        <main className="flex-1">
-          <header className="mb-8 flex flex-col gap-4 rounded-3xl border border-stone-200 bg-white p-5 shadow-sm sm:p-6">
+        <main className="min-w-0 flex-1">
+          <header className="mb-6 flex min-w-0 flex-col gap-4 rounded-3xl border border-stone-200 bg-white p-4 shadow-sm sm:mb-8 sm:p-6">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-stone-500">Closet</p>
@@ -211,19 +212,19 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
               </div>
             </div>
 
-            <nav aria-label="Closet navigation" className="flex gap-2 border-t border-stone-200 pt-4 lg:hidden">
-              <Link href="/closet" aria-current="page" className="rounded-full bg-stone-900 px-4 py-2 text-sm text-white">My Closet</Link>
-              <Link href="/closet/gallery" className="rounded-full border border-stone-200 px-4 py-2 text-sm text-stone-700">Gallery</Link>
-              <Link href="/" className="rounded-full border border-stone-200 px-4 py-2 text-sm text-stone-700">Discover</Link>
-              <Link href="/closet/try-on" className="rounded-full border border-stone-200 px-4 py-2 text-sm text-stone-700">Try On</Link>
+            <nav aria-label="Closet navigation" className="flex flex-wrap gap-2 border-t border-stone-200 pt-4 lg:hidden">
+              <Link href="/closet" aria-current="page" className="rounded-full bg-stone-900 px-3 py-2 text-sm text-white sm:px-4">My Closet</Link>
+              <Link href="/closet/gallery" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Gallery</Link>
+              <Link href="/" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Discover</Link>
+              <Link href="/closet/try-on" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Try On</Link>
             </nav>
 
-            <div className="flex flex-col gap-3 border-t border-stone-200 pt-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-3 text-sm text-stone-600">
+            <div className="flex min-w-0 flex-col gap-3 border-t border-stone-200 pt-4 md:flex-row md:items-center md:justify-between">
+              <div className="flex shrink-0 items-center gap-3 text-sm text-stone-600">
                 <span className="rounded-full bg-stone-100 px-3 py-1.5 font-medium text-stone-800">{items.length} saved</span>
               </div>
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <div className="relative">
+              <div className="grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 md:flex md:w-auto md:flex-1 md:justify-end">
+                <div className="relative min-w-0 sm:col-span-2 md:col-span-1 md:flex-1">
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
                   <Input
                     aria-label="Search saved items"
@@ -233,10 +234,10 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
                       setCurrentPage(1);
                     }}
                     placeholder="Search by name or brand"
-                    className="pl-9"
+                    className="w-full pl-9"
                   />
                 </div>
-                <div className="relative">
+                <div className="relative min-w-0">
                   <SlidersHorizontal className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
                   <select
                     value={sourceFilter}
@@ -244,7 +245,7 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
                       setSourceFilter(event.target.value);
                       setCurrentPage(1);
                     }}
-                    className="h-11 rounded-xl border border-stone-300 bg-white pl-9 pr-3 text-sm text-stone-700 outline-none focus:border-stone-800"
+                    className="h-11 w-full rounded-xl border border-stone-300 bg-white pl-9 pr-3 text-sm text-stone-700 outline-none focus:border-stone-800 md:w-44"
                     aria-label="Filter by source website"
                   >
                     <option value="all">All sources</option>
@@ -261,7 +262,7 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
                     setSortBy(event.target.value);
                     setCurrentPage(1);
                   }}
-                  className="h-11 rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-700 outline-none focus:border-stone-800"
+                  className="h-11 w-full min-w-0 rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-700 outline-none focus:border-stone-800 md:w-40"
                   aria-label="Sort saved items"
                 >
                   <option value="recent">Recently added</option>
@@ -311,18 +312,18 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
                   </div>
                   <div className="space-y-3 p-4">
                     <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm text-stone-500">{item.brand || item.source}</p>
-                        <h2 className="mt-1 text-lg font-medium text-stone-900">{item.productName}</h2>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm text-stone-500">{item.brand || item.source}</p>
+                        <h2 className="mt-1 break-words text-lg font-medium text-stone-900">{item.productName}</h2>
                       </div>
                       <Link href={item.productUrl} target="_blank" rel="noreferrer" className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-stone-200 text-stone-600 transition hover:bg-stone-100">
                         <ArrowUpRight className="h-4 w-4" />
                       </Link>
                     </div>
 
-                    <div className="flex items-center justify-between text-sm text-stone-600">
-                      <span>{item.currency ?? "USD"} {item.price ? Number(item.price).toFixed(2) : "—"}</span>
-                      <span>{item.source}</span>
+                    <div className="flex min-w-0 items-center justify-between gap-3 text-sm text-stone-600">
+                      <span className="shrink-0">{item.currency ?? "USD"} {item.price ? Number(item.price).toFixed(2) : "—"}</span>
+                      <span className="truncate text-right">{item.source}</span>
                     </div>
                   </div>
                 </article>
