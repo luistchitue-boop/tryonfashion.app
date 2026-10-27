@@ -27,60 +27,163 @@ function extractFromActiveTab(): Promise<ProductDetails | null> {
         {
           target: { tabId: tab.id },
           func: () => {
-            type JsonLdProduct = {
-              "@type"?: string | string[];
-              name?: string;
-              brand?: string | { name?: string };
-              image?: string | string[] | { url?: string }[];
-              offers?: { price?: string | number; priceCurrency?: string } | { price?: string | number; priceCurrency?: string }[];
-            };
-            const metas = (selectors: string[]) => {
+            type JsonObject = Record<string, unknown>;
+            const asObject = (value: unknown): JsonObject | null =>
+              value && typeof value === "object" && !Array.isArray(value) ? value as JsonObject : null;
+            const textValue = (value: unknown): string => typeof value === "string" || typeof value === "number" ? String(value).trim() : "";
+            const firstText = (...values: unknown[]): string => values.map(textValue).find(Boolean) || "";
+            const meta = (selectors: string[]): string => {
               for (const selector of selectors) {
-                const value = document.querySelector<HTMLMetaElement>(selector)?.content?.trim();
+                const element = document.querySelector<HTMLElement>(selector);
+                const value = (element?.getAttribute("content") || element?.getAttribute("href") || "").trim();
                 if (value) return value;
               }
               return "";
             };
-            const findProduct = (value: unknown): JsonLdProduct | null => {
-              if (Array.isArray(value)) {
-                for (const item of value) {
-                  const found = findProduct(item);
-                  if (found) return found;
-                }
-              } else if (value && typeof value === "object") {
-                const object = value as JsonLdProduct & { "@graph"?: unknown };
-                const types = Array.isArray(object["@type"]) ? object["@type"] : [object["@type"]];
-                if (types.some((type) => type?.toLowerCase() === "product")) return object;
-                return object["@graph"] ? findProduct(object["@graph"]) : null;
+            const absoluteHttpUrl = (value: unknown): string => {
+              const candidate = textValue(value);
+              if (!candidate) return "";
+              try {
+                const url = new URL(candidate, document.baseURI);
+                return url.protocol === "http:" || url.protocol === "https:" ? url.href : "";
+              } catch {
+                return "";
               }
-              return null;
             };
-
-            let product: JsonLdProduct | null = null;
+            const imageUrls = (value: unknown): string[] => {
+              const entries = Array.isArray(value) ? value : [value];
+              return entries.map((entry) => {
+                const object = asObject(entry);
+                return absoluteHttpUrl(object ? object.contentUrl || object.url || object.thumbnailUrl : entry);
+              }).filter(Boolean);
+            };
+            const parsePrice = (value: unknown): string => {
+              const raw = textValue(value);
+              if (!raw || raw.length > 50) return "";
+              let number = raw.replace(/[\u00a0\u202f\s]/g, "").replace(/[^\d.,+\-]/g, "");
+              if (!/\d/.test(number)) return "";
+              const negative = number.startsWith("-");
+              number = number.replace(/[+-]/g, "");
+              const lastDot = number.lastIndexOf(".");
+              const lastComma = number.lastIndexOf(",");
+              const decimalSeparator = lastDot > lastComma ? "." : lastComma > lastDot ? "," : "";
+              if (decimalSeparator) {
+                const decimalDigits = number.length - number.lastIndexOf(decimalSeparator) - 1;
+                const otherSeparator = decimalSeparator === "." ? "," : ".";
+                const hasBoth = number.includes(otherSeparator);
+                const isThousandsOnly = !hasBoth && (number.match(/[.,]/g) || []).length === 1 && decimalDigits === 3;
+                if (isThousandsOnly) number = number.replace(/[.,]/g, "");
+                else {
+                  number = number.split(otherSeparator).join("");
+                  const splitAt = number.lastIndexOf(decimalSeparator);
+                  number = `${number.slice(0, splitAt).replace(/[.,]/g, "")}.${number.slice(splitAt + 1).replace(/[.,]/g, "")}`;
+                }
+              }
+              const parsed = Number(`${negative ? "-" : ""}${number}`);
+              return Number.isFinite(parsed) ? String(parsed) : "";
+            };
+            const walk = (value: unknown, visit: (object: JsonObject) => void, seen = new Set<object>()) => {
+              if (Array.isArray(value)) {
+                value.forEach((entry) => walk(entry, visit, seen));
+                return;
+              }
+              const object = asObject(value);
+              if (!object || seen.has(object)) return;
+              seen.add(object);
+              visit(object);
+              Object.values(object).forEach((entry) => walk(entry, visit, seen));
+            };
+            const productCandidates: JsonObject[] = [];
             for (const script of document.querySelectorAll('script[type="application/ld+json"]')) {
               try {
-                product = findProduct(JSON.parse(script.textContent || ""));
-                if (product) break;
+                walk(JSON.parse(script.textContent || ""), (object) => {
+                  const types = Array.isArray(object["@type"]) ? object["@type"] : [object["@type"]];
+                  if (types.some((type) => typeof type === "string" && type.toLowerCase() === "product")) productCandidates.push(object);
+                });
               } catch {
-                // Ignore malformed or unrelated structured data and try the next block.
+                // Ignore malformed structured data and continue with other sources.
               }
             }
+            const product = productCandidates.sort((a, b) => {
+              const score = (item: JsonObject) => Number(Boolean(item.name)) + Number(Boolean(item.image)) + Number(Boolean(item.offers)) + Number(Boolean(item.brand));
+              return score(b) - score(a);
+            })[0];
 
-            const offers = Array.isArray(product?.offers) ? product.offers[0] : product?.offers;
-            const productImage = Array.isArray(product?.image) ? product?.image[0] : product?.image;
-            const image = typeof productImage === "string" ? productImage : productImage?.url;
-            const brand = typeof product?.brand === "string" ? product.brand : product?.brand?.name || "";
-            const metaImage = metas(['meta[property="og:image"]', 'meta[name="twitter:image"]']);
-            const metaPrice = metas(['meta[property="product:price:amount"]', 'meta[property="og:price:amount"]']);
-            const metaCurrency = metas(['meta[property="product:price:currency"]', 'meta[property="og:price:currency"]']);
+            const offersValue = product?.offers;
+            const offerEntries = Array.isArray(offersValue) ? offersValue : offersValue ? [offersValue] : [];
+            let structuredPrice = "";
+            let structuredCurrency = "";
+            for (const entry of offerEntries) {
+              const offer = asObject(entry);
+              if (!offer) continue;
+              const specs = Array.isArray(offer.priceSpecification) ? offer.priceSpecification : [offer.priceSpecification];
+              const spec = specs.map(asObject).find(Boolean);
+              structuredPrice = parsePrice(offer.price ?? offer.lowPrice ?? spec?.price ?? spec?.minPrice);
+              structuredCurrency = firstText(offer.priceCurrency, spec?.priceCurrency, spec?.currency);
+              if (structuredPrice) break;
+            }
+
+            const microdataPrice = document.querySelector<HTMLElement>('[itemprop="price"]');
+            const itemPrice = microdataPrice?.getAttribute("content") || microdataPrice?.getAttribute("value") || microdataPrice?.textContent;
+            const metaPrice = meta([
+              'meta[property="product:price:amount"]', 'meta[property="og:price:amount"]',
+              'meta[property="product:sale_price:amount"]', 'meta[itemprop="price"]',
+            ]);
+            const priceElements = Array.from(document.querySelectorAll<HTMLElement>(
+              '[itemprop="price"], [data-testid*="price" i], [class*="price" i], [id*="price" i]',
+            )).map((element) => {
+              const rect = element.getBoundingClientRect();
+              const style = getComputedStyle(element);
+              const hint = `${element.getAttribute("class") || ""} ${element.id} ${element.getAttribute("data-testid") || ""}`.toLowerCase();
+              return { element, hint, visible: rect.width > 0 && rect.height > 0 && style.display !== "none" && style.visibility !== "hidden" && style.textDecorationLine !== "line-through" };
+            }).filter(({ element, hint, visible }) => visible && !/(old|was|compare|original|strike|list-price)/i.test(hint) && (element.textContent || "").trim().length <= 50);
+            priceElements.sort((a, b) => Number(b.element.hasAttribute("itemprop")) - Number(a.element.hasAttribute("itemprop")));
+            const visiblePrice = priceElements.map(({ element }) => parsePrice(element.getAttribute("content") || element.getAttribute("value") || element.textContent)).find(Boolean) || "";
+
+            const currencyFromText = (value: string): string => {
+              const upper = value.toUpperCase();
+              if (/\b(USD|CAD|AUD|EUR|GBP|JPY|CNY|INR|CHF)\b/.test(upper)) return upper.match(/\b(USD|CAD|AUD|EUR|GBP|JPY|CNY|INR|CHF)\b/)?.[1] || "";
+              if (value.includes("€")) return "EUR";
+              if (value.includes("£")) return "GBP";
+              if (value.includes("¥")) return "JPY";
+              if (value.includes("$")) return "USD";
+              return "";
+            };
+            const priceSource = firstText(itemPrice, metaPrice, priceElements[0]?.element.textContent);
+            const currency = firstText(structuredCurrency, meta([
+              'meta[property="product:price:currency"]', 'meta[property="og:price:currency"]', 'meta[itemprop="priceCurrency"]',
+            ]), document.querySelector<HTMLElement>('[itemprop="priceCurrency"]')?.getAttribute("content"), currencyFromText(priceSource));
+
+            const productBrand = asObject(product?.brand);
+            const microdataBrand = document.querySelector<HTMLElement>('[itemprop="brand"]');
+            const brand = firstText(typeof product?.brand === "string" ? product.brand : productBrand?.name, microdataBrand?.getAttribute("content"), microdataBrand?.textContent);
+            const productName = firstText(product?.name, document.querySelector<HTMLElement>('[itemprop="name"]')?.getAttribute("content"), document.querySelector<HTMLElement>("h1")?.textContent, meta(['meta[property="og:title"]', 'meta[name="twitter:title"]']), document.title);
+
+            const imageCandidates = [
+              ...imageUrls(product?.image),
+              meta(['meta[property="og:image"]', 'meta[property="og:image:url"]', 'meta[property="og:image:secure_url"]', 'meta[name="twitter:image"]', 'meta[name="twitter:image:src"]', 'link[rel="image_src"]']),
+            ].map(absoluteHttpUrl).filter(Boolean);
+            const imageNodes = Array.from(document.querySelectorAll<HTMLImageElement>("main img, [role=main] img, article img, img"));
+            const renderedImages = imageNodes.map((img) => {
+              const rect = img.getBoundingClientRect();
+              const hint = `${img.alt} ${img.className} ${img.id} ${img.currentSrc} ${img.src}`.toLowerCase();
+              const srcset = img.getAttribute("srcset")?.split(",").map((part) => part.trim().split(/\s+/)[0]).filter(Boolean).pop();
+              const lazy = img.getAttribute("data-src") || img.getAttribute("data-original") || img.getAttribute("data-lazy-src") || img.getAttribute("data-zoom-image");
+              const url = absoluteHttpUrl(img.currentSrc || lazy || srcset || img.src);
+              const visible = rect.width >= 120 && rect.height >= 120 && getComputedStyle(img).visibility !== "hidden";
+              const unsuitable = /(logo|icon|avatar|sprite|placeholder|payment|flag|pixel|tracking)/i.test(hint) || /\.svg(?:$|[?#])/i.test(url);
+              const mainImage = Boolean(img.closest("main, [role=main], article"));
+              return { url, visible, unsuitable, score: (mainImage ? 4 : 0) + (img.naturalWidth >= 300 ? 2 : 0) + (img.alt ? 1 : 0) };
+            }).filter((image) => image.url && image.visible && !image.unsuitable).sort((a, b) => b.score - a.score);
+            const imageUrl = [...imageCandidates, ...renderedImages.map((image) => image.url)].find(Boolean) || "";
 
             return {
-              productName: product?.name || metas(['meta[property="og:title"]', 'meta[name="twitter:title"]']) || document.title,
+              productName,
               brand,
               productUrl: location.href,
-              imageUrl: image || metaImage,
-              price: String(offers?.price ?? metaPrice),
-              currency: offers?.priceCurrency || metaCurrency,
+              imageUrl,
+              price: structuredPrice || parsePrice(itemPrice) || parsePrice(metaPrice) || visiblePrice,
+              currency,
               source: location.hostname.replace(/^www\./, ""),
             };
           },
