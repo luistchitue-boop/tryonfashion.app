@@ -8,6 +8,7 @@ import { ArrowUpRight, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
+import { ITEMS_PER_PAGE, PaginationControls } from "@/components/pagination-controls";
 
 export type ClosetItem = {
   id: string;
@@ -32,6 +33,7 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
   const [query, setQuery] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
+  const [currentPage, setCurrentPage] = useState(1);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +72,10 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
       });
   }, [items, query, sortBy, sourceFilter]);
 
+  const pageCount = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
+  const activePage = Math.min(currentPage, pageCount);
+  const visibleItems = filteredItems.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
+
   const handleAddPiece = async () => {
     setError(null);
     setSuccessMessage(null);
@@ -97,6 +103,7 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
       }
 
       setItems((prev) => [payload.item, ...prev]);
+      setCurrentPage(1);
       setDialogOpen(false);
       setForm({
         productUrl: "",
@@ -217,7 +224,10 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
                   <Input
                     aria-label="Search saved items"
                     value={query}
-                    onChange={(event) => setQuery(event.target.value)}
+                    onChange={(event) => {
+                      setQuery(event.target.value);
+                      setCurrentPage(1);
+                    }}
                     placeholder="Search by name or brand"
                     className="pl-9"
                   />
@@ -226,7 +236,10 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
                   <SlidersHorizontal className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
                   <select
                     value={sourceFilter}
-                    onChange={(event) => setSourceFilter(event.target.value)}
+                    onChange={(event) => {
+                      setSourceFilter(event.target.value);
+                      setCurrentPage(1);
+                    }}
                     className="h-11 rounded-xl border border-stone-300 bg-white pl-9 pr-3 text-sm text-stone-700 outline-none focus:border-stone-800"
                     aria-label="Filter by source website"
                   >
@@ -240,7 +253,10 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
                 </div>
                 <select
                   value={sortBy}
-                  onChange={(event) => setSortBy(event.target.value)}
+                  onChange={(event) => {
+                    setSortBy(event.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="h-11 rounded-xl border border-stone-300 bg-white px-3 text-sm text-stone-700 outline-none focus:border-stone-800"
                   aria-label="Sort saved items"
                 >
@@ -262,8 +278,9 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
           )}
 
           {filteredItems.length ? (
+            <>
             <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {filteredItems.map((item) => (
+              {visibleItems.map((item) => (
                 <article key={item.id} className="group overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                   <div className="relative aspect-[4/5] overflow-hidden bg-stone-100">
                     {item.imageUrl ? (
@@ -307,6 +324,8 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
                 </article>
               ))}
             </div>
+            <PaginationControls itemCount={filteredItems.length} page={activePage} onPageChange={setCurrentPage} label="Closet items" />
+            </>
           ) : (
             <div className="rounded-[2rem] border border-dashed border-stone-300 bg-white p-10 text-center shadow-sm">
               <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-stone-100 text-stone-700">

@@ -6,6 +6,7 @@ import { SignOutButton } from "@clerk/nextjs";
 import { ArrowUpRight, Images, LoaderCircle, Plus, Trash2, Upload, X } from "lucide-react";
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ITEMS_PER_PAGE, PaginationControls } from "@/components/pagination-controls";
 
 type GalleryPhoto = {
   id: string;
@@ -23,12 +24,16 @@ const acceptedImageTypes = "image/jpeg,image/png,image/webp,image/avif";
 
 export function GalleryClient({ initialPhotos, userName, userImage }: GalleryClientProps) {
   const [photos, setPhotos] = useState(initialPhotos);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedPhoto, setSelectedPhoto] = useState<GalleryPhoto | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const pageCount = Math.max(1, Math.ceil(photos.length / ITEMS_PER_PAGE));
+  const activePage = Math.min(currentPage, pageCount);
+  const visiblePhotos = photos.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
 
   const uploadPhotos = async (files: FileList | null) => {
     if (!files?.length) return;
@@ -45,6 +50,7 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || `Could not upload ${file.name}.`);
         setPhotos((current) => [payload.photo, ...current]);
+        setCurrentPage(1);
       }
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Photo upload failed.");
@@ -139,8 +145,9 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
           {error && <p role="alert" className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
           {photos.length ? (
+            <>
             <section aria-label="Your uploaded photos" className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-              {photos.map((photo) => (
+              {visiblePhotos.map((photo) => (
                 <article key={photo.id} className="group overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                   <button type="button" onClick={() => setSelectedPhoto(photo)} className="relative block aspect-[4/5] w-full overflow-hidden bg-stone-100 text-left" aria-label={`Preview ${photo.filename}`}>
                     <Image src={`/api/gallery/${photo.id}/image`} alt={photo.filename} fill unoptimized className="object-cover transition duration-500 group-hover:scale-[1.02]" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
@@ -155,6 +162,8 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
                 </article>
               ))}
             </section>
+            <PaginationControls itemCount={photos.length} page={activePage} onPageChange={setCurrentPage} label="Gallery photos" />
+            </>
           ) : (
             <button type="button" onClick={() => inputRef.current?.click()} disabled={isUploading} className="flex min-h-72 w-full flex-col items-center justify-center rounded-[2rem] border border-dashed border-stone-300 bg-white p-8 text-center transition hover:border-stone-500 hover:bg-stone-50 disabled:opacity-60">
               <span className="flex h-16 w-16 items-center justify-center rounded-full bg-stone-100 text-stone-700"><Images className="h-7 w-7" /></span>
