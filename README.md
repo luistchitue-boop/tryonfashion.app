@@ -34,6 +34,7 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_replace-with-your-clerk-publishable-ke
 CLERK_SECRET_KEY=sk_test_replace-with-your-clerk-secret-key
 DATABASE_URL=your-neon-postgres-connection-string
 BLOB_READ_WRITE_TOKEN=provided-by-vercel-blob
+AI_GATEWAY_API_KEY=your-vercel-ai-gateway-key
 ```
 
 ## Neon database setup
@@ -50,6 +51,10 @@ Vercel runs the same migration automatically through `npm run vercel-build`. The
 ## Personal photo gallery
 
 Connect a Vercel Blob store to the project and enable it for Production, Preview, and Development as needed. Vercel provides `BLOB_READ_WRITE_TOKEN` (or its OIDC Blob connection variables) automatically. Gallery uploads are private, tied to the signed-in user in Neon, and served back through an authenticated route. Users can upload JPEG, PNG, WebP, or AVIF photos up to 4 MB each, preview them, and delete them. The Drizzle migration adds the `GalleryPhoto` table.
+
+## Virtual Try-On
+
+The signed-in `/closet/try-on` page pairs one of the user's Gallery photos with a saved Closet item that has a product image. It sends the two images to Google's Gemini 3 Pro Image model through Vercel AI Gateway and returns an ephemeral preview; generated images are not persisted. Add an `AI_GATEWAY_API_KEY` from your Vercel AI Gateway settings to local `.env`. For Vercel deployments, configure an AI Gateway key or the supported Vercel OIDC integration. Each request is authenticated, checks ownership of both selected records, and fetches only public HTTPS product images.
 
 ## Clerk and Google sign-in setup
 
