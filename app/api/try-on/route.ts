@@ -1,7 +1,7 @@
 import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import { request as httpsRequest } from "node:https";
-import { generateText } from "ai";
+import { generateImage } from "ai";
 import { get } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
@@ -150,28 +150,21 @@ export async function POST(request: Request) {
     }
     const photoBytes = new Uint8Array(await new Response(blob.stream).arrayBuffer());
 
-    const result = await generateText({
-      model: "google/gemini-3-pro-image",
+    const result = await generateImage({
+      model: "microsoft/mai-image-2.6-flash",
       abortSignal: AbortSignal.timeout(105_000),
-      messages: [{
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: `Create a photorealistic virtual try-on using the two reference images. The first image is the user's personal photo; preserve their identity, face, body shape, pose, skin tone, hair, background, and camera framing. The second image shows the clothing item: faithfully reproduce its garment, color, pattern, material, cut, and details, and naturally dress the person in it. Do not add text, accessories, or unrelated clothing. The item is: ${item.productName}. Return one finished image.`,
-          },
-          { type: "file", mediaType: photo.contentType, data: photoBytes },
-          { type: "file", mediaType: productImage.mediaType, data: productImage.data },
+      prompt: {
+        text: `Create a photorealistic virtual try-on using the two reference images. The first image is the user's personal photo; preserve their identity, face, body shape, pose, skin tone, hair, background, and camera framing. The second image shows the clothing item: faithfully reproduce its garment, color, pattern, material, cut, and details, and naturally dress the person in it. Do not add text, accessories, or unrelated clothing. The item is: ${item.productName}. Return one finished image.`,
+        images: [
+          photoBytes,
+          productImage.data,
         ],
-      }],
+      },
     });
 
-    const generatedImage = result.files.find((file) => file.mediaType.startsWith("image/"));
-    if (!generatedImage) return NextResponse.json({ error: "The AI model did not return an image. Please try again." }, { status: 502 });
-
-    return new NextResponse(Buffer.from(generatedImage.uint8Array), {
+    return new NextResponse(Buffer.from(result.image.uint8Array), {
       headers: {
-        "Content-Type": generatedImage.mediaType,
+        "Content-Type": result.image.mediaType,
         "Cache-Control": "private, no-store",
         "X-Content-Type-Options": "nosniff",
       },
