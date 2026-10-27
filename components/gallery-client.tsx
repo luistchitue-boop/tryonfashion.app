@@ -139,14 +139,14 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
           {error && <p role="alert" className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
 
           {photos.length ? (
-            <section aria-label="Your uploaded photos" className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
+            <section aria-label="Your uploaded photos" className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
               {photos.map((photo) => (
-                <article key={photo.id} className="group overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm">
-                  <button type="button" onClick={() => setSelectedPhoto(photo)} className="relative block aspect-[3/4] w-full overflow-hidden bg-stone-100 text-left" aria-label={`Preview ${photo.filename}`}>
-                    <Image src={`/api/gallery/${photo.id}/image`} alt={photo.filename} fill unoptimized className="object-cover transition duration-500 group-hover:scale-[1.03]" sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw" />
+                <article key={photo.id} className="group overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+                  <button type="button" onClick={() => setSelectedPhoto(photo)} className="relative block aspect-[4/5] w-full overflow-hidden bg-stone-100 text-left" aria-label={`Preview ${photo.filename}`}>
+                    <Image src={`/api/gallery/${photo.id}/image`} alt={photo.filename} fill unoptimized className="object-cover transition duration-500 group-hover:scale-[1.02]" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
                     <span className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-stone-700 opacity-0 shadow-sm transition group-hover:opacity-100"><ArrowUpRight className="h-4 w-4" /></span>
                   </button>
-                  <div className="flex items-center justify-between gap-2 p-3">
+                  <div className="flex items-center justify-between gap-2 p-4">
                     <div className="min-w-0"><p className="truncate text-sm font-medium">{photo.filename}</p><p className="mt-0.5 text-xs text-stone-500">{new Date(photo.createdAt).toLocaleDateString()}</p></div>
                     <button type="button" onClick={() => void deletePhoto(photo)} disabled={deletingId === photo.id} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-stone-500 transition hover:bg-red-50 hover:text-red-700 disabled:opacity-50" aria-label={`Delete ${photo.filename}`}>
                       {deletingId === photo.id ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
