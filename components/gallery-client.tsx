@@ -79,7 +79,7 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900">
-      <div className="mx-auto flex max-w-7xl gap-8 px-4 py-6 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl gap-4 px-3 py-5 sm:gap-8 sm:px-6 sm:py-6 lg:px-8">
         <aside className="hidden w-64 shrink-0 rounded-2xl border border-stone-200 bg-white p-5 lg:block">
           <div className="mb-8 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-900 text-sm font-semibold text-stone-50">TF</div>
@@ -110,20 +110,20 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
         </aside>
 
         <main className="min-w-0 flex-1">
-          <header className="mb-6 rounded-3xl border border-stone-200 bg-white p-5 shadow-sm sm:p-7">
+          <header className="mb-6 min-w-0 rounded-3xl border border-stone-200 bg-white p-4 shadow-sm sm:p-7">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-stone-500">Your private photo library</p>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight">Gallery</h1>
                 <p className="mt-2 max-w-xl text-sm leading-6 text-stone-600">Add clear photos of yourself to keep ready for future virtual try-ons. Your photos are private and only visible to you.</p>
               </div>
-              <div className="flex gap-2">
-                <Button type="button" onClick={() => inputRef.current?.click()} disabled={isUploading}>
+              <div className="flex w-full flex-wrap gap-2 sm:w-auto sm:shrink-0">
+                <Button type="button" onClick={() => inputRef.current?.click()} disabled={isUploading} className="min-w-0 flex-1 sm:flex-none">
                   {isUploading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
                   {isUploading ? uploadProgress : "Upload photos"}
                 </Button>
                 <SignOutButton redirectUrl="/">
-                  <Button type="button" variant="secondary" className="lg:hidden">Sign out</Button>
+                  <Button type="button" variant="secondary" className="flex-1 sm:flex-none lg:hidden">Sign out</Button>
                 </SignOutButton>
               </div>
               <input
@@ -136,11 +136,11 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
                 aria-label="Choose photos to upload"
               />
             </div>
-            <nav aria-label="Closet navigation" className="mt-6 flex gap-2 border-t border-stone-200 pt-4 lg:hidden">
-              <Link href="/closet" className="rounded-full border border-stone-200 px-4 py-2 text-sm text-stone-700">My Closet</Link>
-              <Link href="/closet/gallery" aria-current="page" className="rounded-full bg-stone-900 px-4 py-2 text-sm text-white">Gallery</Link>
-              <Link href="/" className="rounded-full border border-stone-200 px-4 py-2 text-sm text-stone-700">Discover</Link>
-              <Link href="/closet/try-on" className="rounded-full border border-stone-200 px-4 py-2 text-sm text-stone-700">Try On</Link>
+            <nav aria-label="Closet navigation" className="mt-5 flex flex-wrap gap-2 border-t border-stone-200 pt-4 lg:hidden">
+              <Link href="/closet" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">My Closet</Link>
+              <Link href="/closet/gallery" aria-current="page" className="rounded-full bg-stone-900 px-3 py-2 text-sm text-white sm:px-4">Gallery</Link>
+              <Link href="/" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Discover</Link>
+              <Link href="/closet/try-on" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Try On</Link>
             </nav>
           </header>
 
@@ -148,16 +148,16 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
 
           {photos.length ? (
             <>
-            <section aria-label="Your uploaded photos" className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            <section aria-label="Your uploaded photos" className="grid min-w-0 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
               {visiblePhotos.map((photo) => (
                 <article key={photo.id} className="group overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                   <button type="button" onClick={() => setSelectedPhoto(photo)} className="relative block aspect-[4/5] w-full overflow-hidden bg-stone-100 text-left" aria-label={`Preview ${photo.filename}`}>
                     <Image src={`/api/gallery/${photo.id}/image`} alt={photo.filename} fill unoptimized className="object-cover transition duration-500 group-hover:scale-[1.02]" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" />
-                    <span className="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-stone-700 opacity-0 shadow-sm transition group-hover:opacity-100"><ArrowUpRight className="h-4 w-4" /></span>
+                    <span className="absolute bottom-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-stone-700 opacity-100 shadow-sm transition sm:opacity-0 sm:group-hover:opacity-100"><ArrowUpRight className="h-4 w-4" /></span>
                   </button>
                   <div className="flex items-center justify-between gap-2 p-4">
                     <div className="min-w-0"><p className="truncate text-sm font-medium">{photo.filename}</p><p className="mt-0.5 text-xs text-stone-500">{new Date(photo.createdAt).toLocaleDateString()}</p></div>
-                    <button type="button" onClick={() => void deletePhoto(photo)} disabled={deletingId === photo.id} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-stone-500 transition hover:bg-red-50 hover:text-red-700 disabled:opacity-50" aria-label={`Delete ${photo.filename}`}>
+                    <button type="button" onClick={() => void deletePhoto(photo)} disabled={deletingId === photo.id} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-stone-500 transition hover:bg-red-50 hover:text-red-700 disabled:opacity-50" aria-label={`Delete ${photo.filename}`}>
                       {deletingId === photo.id ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                     </button>
                   </div>
@@ -178,14 +178,16 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
       </div>
 
       {selectedPhoto && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/80 p-4" role="dialog" aria-modal="true" aria-label={`Preview ${selectedPhoto.filename}`} onClick={() => setSelectedPhoto(null)}>
-          <div className="relative flex max-h-[92vh] w-full max-w-3xl flex-col items-center" onClick={(event) => event.stopPropagation()}>
-            <button type="button" onClick={() => setSelectedPhoto(null)} className="absolute -right-2 -top-12 flex h-10 w-10 items-center justify-center rounded-full bg-white text-stone-900" aria-label="Close photo preview"><X className="h-5 w-5" /></button>
-            <div className="relative h-[75vh] w-full overflow-hidden rounded-2xl bg-black">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-950/80 p-3 backdrop-blur-sm sm:p-6" role="presentation" onClick={() => setSelectedPhoto(null)}>
+          <section className="relative flex max-h-[94dvh] w-full max-w-3xl flex-col overflow-hidden rounded-3xl border border-white/20 bg-white shadow-2xl" role="dialog" aria-modal="true" aria-label={`Preview ${selectedPhoto.filename}`} onClick={(event) => event.stopPropagation()}>
+            <header className="flex items-center justify-between gap-3 border-b border-stone-100 px-4 py-3 sm:px-5">
+              <p className="min-w-0 truncate text-sm font-medium text-stone-800">{selectedPhoto.filename}</p>
+              <button type="button" onClick={() => setSelectedPhoto(null)} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-stone-200 text-stone-900 transition hover:bg-stone-100" aria-label="Close photo preview"><X className="h-5 w-5" /></button>
+            </header>
+            <div className="relative min-h-0 flex-1 bg-stone-950">
               <Image src={`/api/gallery/${selectedPhoto.id}/image`} alt={selectedPhoto.filename} fill unoptimized className="object-contain" sizes="90vw" />
             </div>
-            <p className="mt-3 max-w-full truncate text-sm text-white">{selectedPhoto.filename}</p>
-          </div>
+          </section>
         </div>
       )}
     </div>
