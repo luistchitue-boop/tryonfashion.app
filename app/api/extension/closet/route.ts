@@ -60,7 +60,13 @@ export async function POST(request: Request) {
       // chrome-extension:// origin used by the request's CORS check.
       authorizedParties: authorizedParties(),
     });
-  } catch {
+  } catch (error) {
+    // Keep the bearer token out of logs; the verification reason is needed to
+    // distinguish an expired token from a key or authorized-party mismatch.
+    console.error("Extension Clerk token verification failed", {
+      name: error instanceof Error ? error.name : "UnknownError",
+      message: error instanceof Error ? error.message : "Non-Error thrown",
+    });
     return NextResponse.json({ error: "Your sign-in expired. Sign in again and retry." }, { status: 401, headers });
   }
 
