@@ -60,7 +60,16 @@ async function fetchProductImage(imageUrl: string) {
       method: "GET",
       agent: false,
       headers: { Accept: "image/jpeg,image/png,image/webp,image/avif" },
-      lookup: (_hostname, _options, callback) => callback(null, pinnedAddress, 4),
+      lookup: (_hostname, options, callback) => {
+        // Node may request all DNS records when opening a TLS socket. Honor
+        // that overload; returning a scalar in all mode produces an undefined
+        // address in Node's family-selection path.
+        if (typeof options === "object" && options.all) {
+          callback(null, [{ address: pinnedAddress, family: 4 }]);
+        } else {
+          callback(null, pinnedAddress, 4);
+        }
+      },
     }, (response) => {
       if (response.statusCode !== 200) {
         response.resume();
