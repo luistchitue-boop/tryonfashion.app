@@ -19,6 +19,12 @@ html {
   scroll-behavior: smooth;
 }
 
+@keyframes tryon-progress {
+  0% { transform: translateX(-120%); }
+  50% { transform: translateX(100%); }
+  100% { transform: translateX(320%); }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
