@@ -2,6 +2,7 @@ import { lookup } from "node:dns/promises";
 import { isIP } from "node:net";
 import { request as httpsRequest } from "node:https";
 import { generateImage } from "ai";
+import sharp from "sharp";
 import { get } from "@vercel/blob";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
@@ -14,6 +15,15 @@ export const maxDuration = 120;
 
 const MAX_PRODUCT_IMAGE_BYTES = 8 * 1024 * 1024;
 const supportedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
+
+async function toModelJpeg(image: Uint8Array) {
+  return new Uint8Array(await sharp(image, { limitInputPixels: 40_000_000 })
+    .rotate()
+    .resize({ width: 1536, height: 2048, fit: "inside", withoutEnlargement: true })
+    .flatten({ background: "#ffffff" })
+    .jpeg({ quality: 88, mozjpeg: true })
+    .toBuffer());
+}
 
 function isPublicIpv4(address: string) {
   if (isIP(address) !== 4) return false;
@@ -149,16 +159,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Could not load your selected gallery photo." }, { status: 404 });
     }
     const photoBytes = new Uint8Array(await new Response(blob.stream).arrayBuffer());
+    const [modelPhoto, modelProduct] = await Promise.all([
+      toModelJpeg(photoBytes),
+      toModelJpeg(productImage.data),
+    ]);
 
     const result = await generateImage({
       model: "microsoft/mai-image-2.6-flash",
       abortSignal: AbortSignal.timeout(105_000),
       prompt: {
         text: `Create a photorealistic virtual try-on using the two reference images. The first image is the user's personal photo; preserve their identity, face, body shape, pose, skin tone, hair, background, and camera framing. The second image shows the clothing item: faithfully reproduce its garment, color, pattern, material, cut, and details, and naturally dress the person in it. Do not add text, accessories, or unrelated clothing. The item is: ${item.productName}. Return one finished image.`,
-        images: [
-          photoBytes,
-          productImage.data,
-        ],
+        images: [modelPhoto, modelProduct],
       },
     });
 
