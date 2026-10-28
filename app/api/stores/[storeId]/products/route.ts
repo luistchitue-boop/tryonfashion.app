@@ -1,4 +1,5 @@
 import { load } from "cheerio";
+import { unstable_cache } from "next/cache";
 import { NextResponse } from "next/server";
 
 export const runtime = "nodejs";
@@ -6,6 +7,7 @@ export const revalidate = 900;
 
 const MAX_PAGE_BYTES = 5 * 1024 * 1024;
 const MAX_PRODUCTS = 30;
+const CATALOG_TTL_SECONDS = 900;
 
 type StoreCatalog = {
   name: string;
@@ -22,6 +24,13 @@ type Product = {
   price: string | null;
   currency: string | null;
 };
+
+class CatalogFetchError extends Error {
+  constructor(message: string, readonly status?: number) {
+    super(message);
+    this.name = "CatalogFetchError";
+  }
+}
 
 const catalogs: Record<string, StoreCatalog> = {
   saks: {
@@ -159,23 +168,24 @@ async function getCatalogHtml(url: string, catalog: StoreCatalog) {
       throw new Error("Retailer redirected outside its approved domain.");
     }
     const response = await fetch(current, {
+      cache: "no-store",
       headers: {
         Accept: "text/html,application/xhtml+xml",
         "User-Agent": "TryOnFashion/1.0 (+https://www.tryonfashion.app; product catalog preview)",
       },
       redirect: "manual",
       signal: AbortSignal.timeout(10_000),
-      next: { revalidate: 900 },
+      next: { revalidate: CATALOG_TTL_SECONDS },
     });
     if ([301, 302, 303, 307, 308].includes(response.status)) {
       const location = response.headers.get("location");
-      if (!location) throw new Error("Retailer redirected without a destination.");
+      if (!location) throw new CatalogFetchError("Retailer redirected without a destination.", response.status);
       current = new URL(location, current);
       continue;
     }
-    if (!response.ok) throw new Error(`Retailer returned HTTP ${response.status}.`);
+    if (!response.ok) throw new CatalogFetchError(`Retailer returned HTTP ${response.status}.`, response.status);
     if (!response.headers.get("content-type")?.toLowerCase().includes("text/html")) {
-      throw new Error("Retailer did not return a product page.");
+      throw new CatalogFetchError("Retailer did not return a product page.", response.status);
     }
     const declaredLength = Number(response.headers.get("content-length") || 0);
     if (declaredLength > MAX_PAGE_BYTES) throw new Error("Retailer page is too large to process.");
@@ -185,6 +195,28 @@ async function getCatalogHtml(url: string, catalog: StoreCatalog) {
   }
   throw new Error("Retailer redirected too many times.");
 }
+
+const getCachedCatalog = unstable_cache(
+  async (storeId: string, department: "women" | "men") => {
+    const catalog = catalogs[storeId];
+    const { html, finalUrl } = await getCatalogHtml(catalog.pages[department], catalog);
+    const products = productsFromHtml(html, finalUrl, catalog);
+    if (products.length) return { products, store: catalog.name, department };
+
+    const looksBlocked = /captcha|access denied|verify (that )?you are human|robot check|bot detection|request blocked|security challenge/i.test(html);
+    return {
+      products: [],
+      store: catalog.name,
+      department,
+      code: looksBlocked ? "RETAILER_BLOCKED" : "NO_PRODUCTS_FOUND",
+      message: looksBlocked
+        ? `${catalog.name} returned a bot-check or access-restricted page, so its products can't be displayed here right now.`
+        : `We received ${catalog.name}'s page, but couldn't identify product cards in its current layout. The store may have changed its page structure.`,
+    };
+  },
+  ["store-catalog-v1"],
+  { revalidate: CATALOG_TTL_SECONDS, tags: ["store-catalog"] },
+);
 
 export async function GET(request: Request, { params }: { params: Promise<{ storeId: string }> }) {
   const { storeId } = await params;
@@ -197,23 +229,30 @@ export async function GET(request: Request, { params }: { params: Promise<{ stor
   }
 
   try {
-    const { html, finalUrl } = await getCatalogHtml(catalog.pages[department], catalog);
-    const products = productsFromHtml(html, finalUrl, catalog);
-    if (!products.length) {
-      return NextResponse.json({
-        products: [],
-        store: catalog.name,
-        department,
-        message: "This retailer's catalog did not expose product details on its public page. Try again later or visit its collection in a new tab.",
-      }, { headers: { "Cache-Control": "public, s-maxage=900, stale-while-revalidate=3600" } });
-    }
-    return NextResponse.json({ products, store: catalog.name, department }, {
-      headers: { "Cache-Control": "public, s-maxage=900, stale-while-revalidate=3600" },
+    const result = await getCachedCatalog(storeId, department);
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": `public, s-maxage=${CATALOG_TTL_SECONDS}, stale-while-revalidate=3600` },
     });
   } catch (error) {
-    console.warn("Store catalog fetch failed", { storeId, message: error instanceof Error ? error.message : "Unknown error" });
+    const status = error instanceof CatalogFetchError ? error.status : undefined;
+    const code = status === 403 || status === 401 ? "RETAILER_BLOCKED"
+      : status === 429 ? "RETAILER_RATE_LIMITED"
+      : status && status >= 500 ? "RETAILER_UNAVAILABLE"
+      : error instanceof Error && error.name === "TimeoutError" ? "RETAILER_TIMEOUT"
+      : "CATALOG_FETCH_FAILED";
+    console.warn("Store catalog fetch failed", { storeId, code, status, message: error instanceof Error ? error.message : "Unknown error" });
+    const errorMessage = code === "RETAILER_BLOCKED"
+      ? `${catalog.name} is blocking automated catalog requests (HTTP ${status}). We won't bypass its access controls; an approved product feed is needed to show its listings here.`
+      : code === "RETAILER_RATE_LIMITED"
+        ? `${catalog.name} is temporarily rate-limiting catalog requests. Please retry in a little while.`
+        : code === "RETAILER_UNAVAILABLE"
+          ? `${catalog.name} is temporarily unavailable (HTTP ${status}). Please try again later.`
+          : code === "RETAILER_TIMEOUT"
+            ? `${catalog.name} took too long to respond. Please retry.`
+            : "We couldn't load this store's catalog right now. Please retry.";
     return NextResponse.json({
-      error: "We couldn't load this store's catalog right now. The retailer may block automated requests or be temporarily unavailable.",
-    }, { status: 502 });
+      error: errorMessage,
+      code,
+    }, { status: code === "RETAILER_BLOCKED" ? 503 : 502, headers: { "Cache-Control": "no-store" } });
   }
 }

@@ -58,7 +58,7 @@ The signed-in `/closet/try-on` page pairs one of the user's Gallery photos with 
 
 ## Featured stores
 
-The `/stores` directory lets users choose a women's or men's department and requests product cards from a fixed set of public retailer category pages. The server only fetches hard-coded HTTPS URLs for known retailers, limits redirects to their domains, validates product links and image CDN hosts, and caches catalog responses briefly. Retailers may block automated access or change their page markup; in those cases the catalog shows an unavailable/empty state. This is best-effort public-page parsing, not an official product feed, and should be replaced with retailer-approved APIs or licensed affiliate feeds for a durable production catalog. Respect each retailer's terms and image/data display requirements; the app does not attempt to bypass access controls.
+The `/stores` directory lets users choose a women's or men's department and requests product cards from a fixed set of public retailer category pages. The server only fetches hard-coded HTTPS URLs for known retailers, limits redirects to their domains, validates product links and image CDN hosts, and caches parsed catalog results in the Next.js data cache for 15 minutes. Transient errors are not cached so users can retry; rate limits and access blocks are reported clearly. Retailers may block automated access or change their page markup, so live listings are best-effort, not guaranteed. This is not an official product feed and should be replaced with retailer-approved APIs or licensed affiliate feeds for a durable production catalog. Respect each retailer's terms and image/data display requirements; the app does not attempt to bypass access controls.
 
 ## Clerk and Google sign-in setup
 

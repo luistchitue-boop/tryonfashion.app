@@ -27,6 +27,7 @@ export function StoreExplorer({ stores }: StoreExplorerProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [catalogError, setCatalogError] = useState("");
+  const [catalogCode, setCatalogCode] = useState("");
   const [savedProductIds, setSavedProductIds] = useState<string[]>([]);
   const [savingProductId, setSavingProductId] = useState<string | null>(null);
 
@@ -35,6 +36,7 @@ export function StoreExplorer({ stores }: StoreExplorerProps) {
     setDepartment(null);
     setProducts([]);
     setCatalogError("");
+    setCatalogCode("");
   };
 
   const closeStore = (open: boolean) => {
@@ -43,6 +45,7 @@ export function StoreExplorer({ stores }: StoreExplorerProps) {
       setDepartment(null);
       setProducts([]);
       setCatalogError("");
+      setCatalogCode("");
     }
   };
 
@@ -51,12 +54,17 @@ export function StoreExplorer({ stores }: StoreExplorerProps) {
     setDepartment(choice);
     setIsLoading(true);
     setCatalogError("");
+    setCatalogCode("");
     setProducts([]);
     try {
       const response = await fetch(`/api/stores/${encodeURIComponent(selectedStore.id)}/products?department=${choice}`);
-      const payload = await response.json() as { products?: Product[]; error?: string; message?: string };
-      if (!response.ok) throw new Error(payload.error || "The store catalog is temporarily unavailable.");
+      const payload = await response.json() as { products?: Product[]; error?: string; message?: string; code?: string };
+      if (!response.ok) {
+        setCatalogCode(payload.code ?? "CATALOG_FETCH_FAILED");
+        throw new Error(payload.error || "The store catalog is temporarily unavailable.");
+      }
       setProducts(payload.products ?? []);
+      setCatalogCode(payload.code ?? "");
       setCatalogError(payload.message ?? "");
     } catch (error) {
       setCatalogError(error instanceof Error ? error.message : "The store catalog is temporarily unavailable.");
@@ -147,9 +155,16 @@ export function StoreExplorer({ stores }: StoreExplorerProps) {
                     <span className="mb-1 inline-flex h-11 w-11 items-center justify-center rounded-full bg-stone-900 text-white"><Sparkles className="h-5 w-5" /></span>
                     <p className="text-xs font-medium uppercase tracking-[0.2em] text-stone-500">{selectedStore.name} · {department === "women" ? "Women's" : "Men's"}</p>
                     <h2 className="pr-8 text-2xl font-semibold tracking-tight text-stone-900 sm:text-3xl">{isLoading ? "Loading the collection…" : `${department === "women" ? "Women's" : "Men's"} collection`}</h2>
-                    <p className="mt-1 text-sm leading-6 text-stone-600">Product details are gathered from {selectedStore.name}&apos;s public category page. Some retailers may limit automated access.</p>
+                    <p className="mt-1 text-sm leading-6 text-stone-600">We refresh {selectedStore.name}&apos;s public category page every 15 minutes. Some retailers limit automated access.</p>
                   </DialogHeader>
-                  {catalogError && <p role="status" className="mt-2 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">{catalogError}</p>}
+                  {catalogError && (
+                    <div role="status" className="mt-2 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                      <p>{catalogError}</p>
+                      {catalogCode && catalogCode !== "RETAILER_BLOCKED" && catalogCode !== "RETAILER_RATE_LIMITED" && (
+                        <button type="button" onClick={() => void chooseDepartment(department)} className="mt-3 min-h-10 rounded-full border border-amber-300 bg-white px-4 text-sm font-medium text-amber-950 transition hover:bg-amber-100">Retry catalog fetch</button>
+                      )}
+                    </div>
+                  )}
                   {isLoading ? (
                     <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3" aria-label="Loading products" aria-busy="true">
                       {Array.from({ length: 6 }, (_, index) => <div key={index} className="animate-pulse overflow-hidden rounded-2xl border border-stone-200 bg-white"><div className="aspect-[4/5] bg-stone-200" /><div className="space-y-2 p-3"><div className="h-3 rounded bg-stone-200" /><div className="h-3 w-1/2 rounded bg-stone-100" /></div></div>)}
@@ -173,7 +188,7 @@ export function StoreExplorer({ stores }: StoreExplorerProps) {
                     <div className="mt-3 rounded-2xl border border-stone-200 bg-white p-6 text-center text-sm text-stone-600">No product listings were found on this store page.</div>
                   ) : null}
                   <div className="mt-2 flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
-                    <button type="button" onClick={() => { setDepartment(null); setProducts([]); setCatalogError(""); }} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-5 text-sm font-medium text-stone-700 transition hover:bg-stone-100"><ArrowRight className="h-4 w-4 rotate-180" />Change department</button>
+                    <button type="button" onClick={() => { setDepartment(null); setProducts([]); setCatalogError(""); setCatalogCode(""); }} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-5 text-sm font-medium text-stone-700 transition hover:bg-stone-100"><ArrowRight className="h-4 w-4 rotate-180" />Change department</button>
                     <button type="button" onClick={() => closeStore(false)} className="inline-flex min-h-11 items-center justify-center rounded-full bg-stone-900 px-5 text-sm font-medium text-white transition hover:bg-stone-700">Done</button>
                   </div>
                 </>
