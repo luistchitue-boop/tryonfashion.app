@@ -93,6 +93,7 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
             <Link href="/closet/gallery" aria-current="page" className="block rounded-xl bg-stone-900 px-3 py-2.5 text-sm font-medium text-white">Gallery</Link>
             <Link href="/" className="block rounded-xl px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100">Discover</Link>
             <Link href="/closet/try-on" className="block rounded-xl px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100">Try On</Link>
+            <Link href="/stores" className="block rounded-xl px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100">Stores</Link>
           </nav>
           <div className="mt-10 rounded-2xl border border-stone-200 bg-stone-50 p-4">
             <div className="flex items-center gap-3">
@@ -141,6 +142,7 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
               <Link href="/closet/gallery" aria-current="page" className="rounded-full bg-stone-900 px-3 py-2 text-sm text-white sm:px-4">Gallery</Link>
               <Link href="/" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Discover</Link>
               <Link href="/closet/try-on" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Try On</Link>
+              <Link href="/stores" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Stores</Link>
             </nav>
           </header>
 

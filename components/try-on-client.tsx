@@ -91,6 +91,7 @@ export function TryOnClient({ initialItems, initialPhotos }: TryOnClientProps) {
           <Link href="/closet/gallery" className="rounded-full border border-stone-200 bg-white px-4 py-2 text-stone-700 transition hover:bg-stone-100">Gallery</Link>
           <Link href="/" className="rounded-full border border-stone-200 bg-white px-4 py-2 text-stone-700 transition hover:bg-stone-100">Discover</Link>
           <Link href="/closet/try-on" aria-current="page" className="rounded-full bg-stone-900 px-4 py-2 font-medium text-white">Try On</Link>
+          <Link href="/stores" className="rounded-full border border-stone-200 bg-white px-4 py-2 text-stone-700 transition hover:bg-stone-100">Stores</Link>
         </nav>
 
         {initialItems.filter((entry) => entry.imageUrl).length && initialPhotos.length ? (
