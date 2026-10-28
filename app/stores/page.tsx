@@ -1,77 +1,66 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, Bookmark, Sparkles } from "lucide-react";
+import { Bookmark, Sparkles } from "lucide-react";
 import { HomeAuthAction } from "@/components/home-auth-action";
+import { StoreExplorer, type FeaturedStore } from "@/components/store-explorer";
 
 export const metadata: Metadata = {
   title: "Featured Stores | TryOnFashion",
   description: "Explore a curated collection of fashion stores and discover pieces for your TryOnFashion closet.",
 };
 
-type FeaturedStore = {
-  name: string;
-  category: string;
-  description: string;
-  href: string;
-  image: string;
-  imageAlt: string;
-  initials: string;
-  featured?: boolean;
-};
-
 const stores: FeaturedStore[] = [
   {
+    id: "saks",
     name: "Saks Fifth Avenue",
     category: "Designer · Contemporary",
     description: "Discover standout designers, occasionwear, and modern wardrobe staples.",
-    href: "https://www.saksfifthavenue.com/",
     image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=85",
     imageAlt: "Fashion-forward outfits on a clothing rack",
     initials: "S5",
     featured: true,
   },
   {
+    id: "zara",
     name: "Zara",
     category: "Contemporary · Everyday",
     description: "Explore current collections, new arrivals, and easy-to-style essentials.",
-    href: "https://www.zara.com/",
     image: "https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?auto=format&fit=crop&w=1200&q=85",
     imageAlt: "Modern neutral fashion pieces",
     initials: "Z",
   },
   {
+    id: "louis-vuitton",
     name: "Louis Vuitton",
     category: "Luxury · Designer",
     description: "Browse ready-to-wear collections and iconic luxury fashion.",
-    href: "https://www.louisvuitton.com/",
     image: "https://images.unsplash.com/photo-1539109136881-3be0616acf4b?auto=format&fit=crop&w=1200&q=85",
     imageAlt: "Luxury fashion editorial look",
     initials: "LV",
   },
   {
+    id: "nordstrom",
     name: "Nordstrom",
     category: "Designer · Contemporary",
     description: "Shop a wide mix of labels, from daily favorites to special pieces.",
-    href: "https://www.nordstrom.com/",
     image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=85",
     imageAlt: "Carefully curated wardrobe essentials",
     initials: "N",
   },
   {
+    id: "hm",
     name: "H&M",
     category: "Everyday · Contemporary",
     description: "Find wearable essentials and trend-led pieces for every day.",
-    href: "https://www2.hm.com/",
     image: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1200&q=85",
     imageAlt: "Neutral seasonal clothing collection",
     initials: "H&M",
   },
   {
+    id: "asos",
     name: "ASOS",
     category: "Contemporary · Streetwear",
     description: "Explore a broad mix of contemporary fashion and emerging labels.",
-    href: "https://www.asos.com/",
     image: "https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1200&q=85",
     imageAlt: "Street-style fashion portrait",
     initials: "AS",
@@ -119,29 +108,7 @@ export default function StoresPage() {
           <span className="hidden rounded-full bg-white px-3 py-1.5 text-xs text-stone-500 sm:inline-flex">{stores.length} destinations</span>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-3">
-          {stores.map((store) => (
-            <article key={store.name} className={`group overflow-hidden rounded-3xl border border-stone-200 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${store.featured ? "sm:col-span-2 xl:col-span-2" : ""}`}>
-              <div className={`grid h-full ${store.featured ? "sm:grid-cols-[1.1fr_0.9fr]" : ""}`}>
-                <div className={`relative overflow-hidden bg-stone-100 ${store.featured ? "aspect-[5/3] sm:aspect-auto sm:min-h-72" : "aspect-[4/3]"}`}>
-                  <Image src={store.image} alt={store.imageAlt} fill className="object-cover transition duration-700 group-hover:scale-[1.03]" sizes={store.featured ? "(max-width: 640px) 100vw, (max-width: 1280px) 66vw, 50vw" : "(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"} />
-                  <span className="absolute left-4 top-4 flex h-11 min-w-11 items-center justify-center rounded-full border border-white/60 bg-white/90 px-2 text-sm font-semibold tracking-wide text-stone-900 shadow-sm backdrop-blur">{store.initials}</span>
-                  {store.featured && <span className="absolute bottom-4 left-4 rounded-full bg-stone-900/80 px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.18em] text-white backdrop-blur">Editor&apos;s pick</span>}
-                </div>
-                <div className="flex min-w-0 flex-col justify-between gap-5 p-5 sm:p-6">
-                  <div>
-                    <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-stone-500">{store.category}</p>
-                    <h3 className="mt-2 text-2xl font-semibold tracking-tight text-stone-900">{store.name}</h3>
-                    <p className="mt-3 text-sm leading-6 text-stone-600">{store.description}</p>
-                  </div>
-                  <a href={store.href} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 w-full items-center justify-between gap-3 rounded-full border border-stone-300 px-4 py-2.5 text-sm font-medium text-stone-800 transition hover:border-stone-900 hover:bg-stone-50 sm:w-fit sm:justify-center sm:px-5">
-                    Visit store <ArrowUpRight className="h-4 w-4" />
-                  </a>
-                </div>
-              </div>
-            </article>
-          ))}
-        </div>
+        <StoreExplorer stores={stores} />
 
         <p className="mt-8 rounded-2xl border border-stone-200 bg-white p-4 text-xs leading-5 text-stone-500 sm:text-sm">
           Store names and trademarks belong to their respective owners. TryOnFashion is not affiliated with or endorsed by the stores listed. Product availability and prices are set by each retailer.

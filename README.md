@@ -56,6 +56,10 @@ Connect a Vercel Blob store to the project and enable it for Production, Preview
 
 The signed-in `/closet/try-on` page pairs one of the user's Gallery photos with a saved Closet item that has a product image. It sends the two images to Google's Gemini 3 Pro Image model through Vercel AI Gateway and returns an ephemeral preview; generated images are not persisted. Add an `AI_GATEWAY_API_KEY` from your Vercel AI Gateway settings to local `.env`. For Vercel deployments, configure an AI Gateway key or the supported Vercel OIDC integration. Each request is authenticated, checks ownership of both selected records, and fetches only public HTTPS product images.
 
+## Featured stores
+
+The `/stores` directory lets users choose a women's or men's department and requests product cards from a fixed set of public retailer category pages. The server only fetches hard-coded HTTPS URLs for known retailers, limits redirects to their domains, validates product links and image CDN hosts, and caches catalog responses briefly. Retailers may block automated access or change their page markup; in those cases the catalog shows an unavailable/empty state. This is best-effort public-page parsing, not an official product feed, and should be replaced with retailer-approved APIs or licensed affiliate feeds for a durable production catalog. Respect each retailer's terms and image/data display requirements; the app does not attempt to bypass access controls.
+
 ## Clerk and Google sign-in setup
 
 1. Create a Clerk application and copy its publishable and secret keys into `.env`.
