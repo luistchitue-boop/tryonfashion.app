@@ -130,15 +130,32 @@ async function searchCjProducts(department: "women" | "men", search: string, off
   });
 
   if (!response.ok) {
+    const responseBody = (await response.text()).slice(0, 1_500).replaceAll(token, "[redacted]").replace(/[\u0000-\u001f]/g, " ");
+    console.error("CJ product feed HTTP error", {
+      status: response.status,
+      statusText: response.statusText,
+      contentType: response.headers.get("content-type"),
+      body: responseBody,
+    });
     if (response.status === 401 || response.status === 403) throw new Error("CJ_AUTH_FAILED");
     if (response.status === 429) throw new Error("CJ_RATE_LIMITED");
-    throw new Error("CJ_UPSTREAM_FAILED");
+    if (response.status === 400) throw new Error("CJ_QUERY_REJECTED");
+    throw new Error(`CJ_UPSTREAM_${response.status}`);
   }
 
-  const payload = await response.json() as {
+  let payload: {
     data?: { shoppingProducts?: { totalCount?: number; resultList?: CjProduct[] } };
     errors?: Array<{ message?: string }>;
   };
+  try {
+    payload = await response.json();
+  } catch {
+    console.error("CJ product feed returned a non-JSON success response", {
+      status: response.status,
+      contentType: response.headers.get("content-type"),
+    });
+    throw new Error("CJ_INVALID_RESPONSE");
+  }
   if (payload.errors?.length) {
     console.error("CJ product feed query error", { errors: payload.errors.map((error) => error.message).filter(Boolean) });
     throw new Error("CJ_QUERY_FAILED");
@@ -187,9 +204,15 @@ export async function GET(request: Request) {
         ? "CJ rejected the API credentials. Verify the publisher token and company ID in server settings."
         : code === "CJ_RATE_LIMITED"
           ? "CJ is temporarily rate-limiting catalog requests. Please retry shortly."
+          : code === "CJ_QUERY_REJECTED"
+            ? "CJ rejected the catalog query. Verify the company ID, publisher ID, and access to joined product feeds; see the Vercel function logs for CJ's response details."
           : code === "CJ_QUERY_FAILED"
             ? "CJ couldn't complete this product search. Check that your publisher account can access joined shopping feeds."
-            : "CJ's product catalog is temporarily unavailable. Please try again later.";
+            : code === "CJ_INVALID_RESPONSE"
+              ? "CJ returned an unexpected response. Check the Vercel function logs and retry."
+              : code.startsWith("CJ_UPSTREAM_")
+                ? `CJ's catalog service returned an error (${code.replace("CJ_UPSTREAM_", "HTTP ")}). Check the Vercel function logs and retry.`
+                : "CJ's product catalog is temporarily unavailable. Please try again later.";
     return NextResponse.json({ error: message, code }, {
       status: code === "CJ_NOT_CONFIGURED" ? 503 : 502,
       headers: { "Cache-Control": "no-store" },
