@@ -168,8 +168,8 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
             <Link href="/closet/try-on" className="block rounded-xl px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100">
               Try On
             </Link>
-            <Link href="/stores" className="block rounded-xl px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100">
-              Stores
+            <Link href="/shop" className="block rounded-xl px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100">
+              Shop
             </Link>
           </nav>
 
@@ -220,7 +220,7 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
               <Link href="/closet/gallery" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Gallery</Link>
               <Link href="/" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Discover</Link>
               <Link href="/closet/try-on" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Try On</Link>
-              <Link href="/stores" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Stores</Link>
+              <Link href="/shop" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Shop</Link>
             </nav>
 
             <div className="flex min-w-0 flex-col gap-3 border-t border-stone-200 pt-4 md:flex-row md:items-center md:justify-between">
