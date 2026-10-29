@@ -174,7 +174,11 @@ export function ShopClient() {
             <div className="rounded-3xl border border-dashed border-stone-300 bg-white px-6 py-16 text-center">
               <Search className="mx-auto h-7 w-7 text-stone-400" />
               <h3 className="mt-4 text-lg font-semibold text-stone-900">No products found</h3>
-              <p className="mt-1 text-sm text-stone-600">Try another search. Product catalogs depend on the feeds available to your CJ publisher account.</p>
+              <p className="mx-auto mt-1 max-w-xl text-sm leading-6 text-stone-600">
+                {totalCount > 0
+                  ? "CJ returned catalog items, but none had both a usable product image and link. Check the advertiser feed data and your publisher link setup."
+                  : "CJ returned no matching products. Join fashion advertiser programs in CJ, wait for approval, and confirm their shopping product feeds are available to publishers. You can also try a more specific search."}
+              </p>
             </div>
           ) : null}
 

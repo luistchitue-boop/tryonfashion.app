@@ -163,6 +163,13 @@ async function searchCjProducts(department: "women" | "men", search: string, off
 
   const listing = payload.data?.shoppingProducts;
   const products = (listing?.resultList ?? []).map(mapProduct).filter((product): product is ShopProduct => Boolean(product));
+  console.info("CJ product feed search completed", {
+    resultCount: listing?.resultList?.length ?? 0,
+    displayableCount: products.length,
+    totalCount: listing?.totalCount ?? 0,
+    department,
+    hasKeywordSearch: Boolean(search),
+  });
   return {
     products,
     totalCount: Number(listing?.totalCount ?? products.length),
