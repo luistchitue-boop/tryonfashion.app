@@ -81,7 +81,7 @@ async function searchCjProducts(department: "women" | "men", search: string, off
   if (!token || !companyId || !publisherId) throw new Error("CJ_NOT_CONFIGURED");
 
   const keywords = [search ? `${department} ${search}` : `${department} clothing`];
-  const query = `query SearchShoppingProducts($companyId: ID!, $keywords: [String!], $country: String!, $limit: Int!, $offset: Int!, $publisherId: String!) {
+  const query = `query SearchShoppingProducts($companyId: ID!, $keywords: [String!], $country: String!, $limit: Int!, $offset: Int!, $publisherId: ID!) {
     shoppingProducts(
       companyId: $companyId
       partnerStatus: JOINED
