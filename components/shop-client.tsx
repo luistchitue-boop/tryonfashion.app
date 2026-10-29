@@ -17,8 +17,6 @@ type Product = {
   gender: string | null;
 };
 
-const PAGE_SIZE = 30;
-
 export function ShopClient() {
   const [department, setDepartment] = useState<Department | null>(null);
   const [searchInput, setSearchInput] = useState("");
