@@ -48,7 +48,10 @@ export function CreditsClient({ initialBalance, checkoutStatus }: CreditsClientP
 
   return (
     <main className="mx-auto min-h-screen max-w-6xl px-4 py-8 text-stone-900 sm:px-6 lg:px-8">
-      <Link href="/closet" className="text-sm text-stone-600 transition hover:text-stone-950">← Back to My Closet</Link>
+      <div className="flex items-center justify-between gap-4">
+        <Link href="/closet" className="text-sm text-stone-600 transition hover:text-stone-950">← Back to My Closet</Link>
+        <Link href="/settings" className="text-sm text-stone-600 transition hover:text-stone-950">Account settings</Link>
+      </div>
       <header className="mt-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-9">
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-stone-500">Your creative balance</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Credits</h1>

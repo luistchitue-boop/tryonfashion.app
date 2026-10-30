@@ -105,6 +105,7 @@ export function TryOnClient({ initialItems }: TryOnClientProps) {
           <Link href="/closet/try-on" aria-current="page" className="rounded-full bg-stone-900 px-4 py-2 font-medium text-white">Try On</Link>
           <Link href="/shop" className="rounded-full border border-stone-200 bg-white px-4 py-2 text-stone-700 transition hover:bg-stone-100">Shop</Link>
           <Link href="/credits" className="rounded-full border border-stone-200 bg-white px-4 py-2 text-stone-700 transition hover:bg-stone-100">Credits</Link>
+          <Link href="/settings" className="rounded-full border border-stone-200 bg-white px-4 py-2 text-stone-700 transition hover:bg-stone-100">Settings</Link>
         </nav>
 
         {availableItems.length ? (
