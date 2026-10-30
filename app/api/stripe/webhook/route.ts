@@ -40,7 +40,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    await addCredits(userId, creditPackage.credits, "purchase", `stripe-session:${session.id}`);
+    await addCredits(userId, creditPackage.credits, "purchase", `stripe-session:${session.id}`, {
+      amountCents: session.amount_total,
+      currency: session.currency,
+      packageId: creditPackage.id,
+    });
     return NextResponse.json({ received: true });
   } catch (error) {
     console.error("Could not apply Stripe credit purchase", error instanceof Error ? error.message : "Unknown error");

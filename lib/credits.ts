@@ -31,12 +31,21 @@ export async function debitCredits(userId: string, usage: CreditUsage, reference
   return result.rows.length > 0;
 }
 
-export async function addCredits(userId: string, amount: number, type: string, reference: string) {
+export async function addCredits(
+  userId: string,
+  amount: number,
+  type: string,
+  reference: string,
+  payment?: { amountCents: number; currency: string; packageId: string },
+) {
   if (!Number.isInteger(amount) || amount <= 0) throw new Error("Invalid credit amount.");
   const result = await getDb().execute(sql`
     WITH recorded AS (
-      INSERT INTO "CreditTransaction" ("id", "userId", "amount", "type", "reference")
-      VALUES (${crypto.randomUUID()}, ${userId}, ${amount}, ${type}, ${reference})
+      INSERT INTO "CreditTransaction" ("id", "userId", "amount", "type", "reference", "paymentAmountCents", "currency", "packageId")
+      VALUES (
+        ${crypto.randomUUID()}, ${userId}, ${amount}, ${type}, ${reference},
+        ${payment?.amountCents ?? null}, ${payment?.currency ?? null}, ${payment?.packageId ?? null}
+      )
       ON CONFLICT ("reference") DO NOTHING
       RETURNING "userId", "amount"
     ), credited AS (

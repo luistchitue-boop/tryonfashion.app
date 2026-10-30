@@ -2,11 +2,19 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { LoaderCircle, Save, Trash2 } from "lucide-react";
+import { CreditCard, LoaderCircle, Save, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 type AccountSettingsClientProps = { initialName: string; email: string };
+type BillingPurchase = {
+  id: string;
+  credits: number;
+  paymentAmountCents: number | null;
+  currency: string | null;
+  packageId: string | null;
+  createdAt: string;
+};
 
 export function AccountSettingsClient({ initialName, email }: AccountSettingsClientProps) {
   const [name, setName] = useState(initialName);
@@ -16,6 +24,37 @@ export function AccountSettingsClient({ initialName, email }: AccountSettingsCli
   const [isDeleting, setIsDeleting] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState<"profile" | "billing">("profile");
+  const [purchases, setPurchases] = useState<BillingPurchase[]>([]);
+  const [isLoadingBilling, setIsLoadingBilling] = useState(false);
+  const [billingLoaded, setBillingLoaded] = useState(false);
+  const [billingError, setBillingError] = useState("");
+
+  const openBilling = async () => {
+    setActiveTab("billing");
+    if (billingLoaded || isLoadingBilling) return;
+    setIsLoadingBilling(true);
+    setBillingError("");
+    try {
+      const response = await fetch("/api/account/billing", { cache: "no-store" });
+      const payload = await response.json() as { purchases?: BillingPurchase[]; error?: string };
+      if (!response.ok) throw new Error(payload.error || "Could not load billing history.");
+      setPurchases(payload.purchases ?? []);
+      setBillingLoaded(true);
+    } catch (caughtError) {
+      setBillingError(caughtError instanceof Error ? caughtError.message : "Could not load billing history.");
+    } finally {
+      setIsLoadingBilling(false);
+    }
+  };
+
+  const formatPayment = (purchase: BillingPurchase) => {
+    if (purchase.paymentAmountCents === null || !purchase.currency) return "Payment details unavailable";
+    return new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: purchase.currency.toUpperCase(),
+    }).format(purchase.paymentAmountCents / 100);
+  };
 
   const saveProfile = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -60,7 +99,13 @@ export function AccountSettingsClient({ initialName, email }: AccountSettingsCli
   };
 
   return (
-    <div className="mt-8 space-y-6">
+    <div className="mt-8">
+      <div role="tablist" aria-label="Account settings sections" className="mb-6 flex gap-2 border-b border-stone-200">
+        <button type="button" role="tab" id="settings-profile-tab" aria-selected={activeTab === "profile"} aria-controls="settings-profile-panel" onClick={() => setActiveTab("profile")} className={`min-h-11 border-b-2 px-4 text-sm font-medium transition ${activeTab === "profile" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-800"}`}>Profile</button>
+        <button type="button" role="tab" id="settings-billing-tab" aria-selected={activeTab === "billing"} aria-controls="settings-billing-panel" onClick={() => void openBilling()} className={`inline-flex min-h-11 items-center gap-2 border-b-2 px-4 text-sm font-medium transition ${activeTab === "billing" ? "border-stone-900 text-stone-900" : "border-transparent text-stone-500 hover:text-stone-800"}`}><CreditCard className="h-4 w-4" />Billing</button>
+      </div>
+
+      {activeTab === "profile" ? <div id="settings-profile-panel" role="tabpanel" aria-labelledby="settings-profile-tab" className="space-y-6">
       <section className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8">
         <p className="text-xs font-medium uppercase tracking-[0.18em] text-stone-500">Profile</p>
         <h2 className="mt-2 text-xl font-semibold">Your details</h2>
@@ -98,6 +143,17 @@ export function AccountSettingsClient({ initialName, email }: AccountSettingsCli
         </Button>
       </section>
       <p className="text-xs leading-5 text-stone-500">Need help? Contact support before deleting your account.</p>
+      </div> : <section id="settings-billing-panel" role="tabpanel" aria-labelledby="settings-billing-tab" className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div><p className="text-xs font-medium uppercase tracking-[0.18em] text-stone-500">Payments</p><h2 className="mt-2 text-xl font-semibold">Credit purchase history</h2><p className="mt-2 text-sm text-stone-600">Your completed credit pack purchases.</p></div>
+          <Link href="/credits" className="inline-flex min-h-10 items-center justify-center rounded-full bg-stone-900 px-4 text-sm font-medium text-white transition hover:bg-stone-700">Buy credits</Link>
+        </div>
+        {isLoadingBilling ? <div role="status" className="mt-8 flex items-center justify-center gap-2 py-8 text-sm text-stone-500"><LoaderCircle className="h-4 w-4 animate-spin" />Loading billing history…</div>
+          : billingError ? <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"><p role="alert">{billingError}</p><button type="button" onClick={() => { setBillingLoaded(false); void openBilling(); }} className="mt-2 font-semibold underline">Try again</button></div>
+            : purchases.length === 0 ? <div className="mt-8 rounded-2xl border border-dashed border-stone-300 bg-stone-50 px-5 py-10 text-center"><p className="font-medium text-stone-800">No credit purchases yet</p><p className="mt-1 text-sm text-stone-600">Completed purchases will appear here.</p></div>
+              : <ul className="mt-6 divide-y divide-stone-100" aria-label="Credit purchase history">{purchases.map((purchase) => <li key={purchase.id} className="flex flex-wrap items-center justify-between gap-4 py-4 first:pt-1"><div><p className="font-medium text-stone-900">{purchase.credits.toLocaleString()} credits</p><p className="mt-1 text-sm text-stone-500">{purchase.packageId ? `${purchase.packageId[0]?.toUpperCase()}${purchase.packageId.slice(1)} package · ` : ""}{new Date(purchase.createdAt).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" })}</p></div><div className="text-right"><p className="font-semibold text-stone-900">{formatPayment(purchase)}</p><p className="mt-1 text-xs text-stone-500">Paid</p></div></li>)}</ul>}
+        <p className="mt-5 text-xs leading-5 text-stone-500">Only purchases completed after billing history became available include their payment amount. Stripe remains the source of truth for receipts and formal invoices.</p>
+      </section>}
       <Link href="/closet" className="inline-flex text-sm font-medium text-stone-700 underline">Return to My Closet</Link>
     </div>
   );

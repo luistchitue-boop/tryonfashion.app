@@ -105,6 +105,9 @@ export const creditTransactions = pgTable(
     amount: integer("amount").notNull(),
     type: text("type").notNull(),
     reference: text("reference").notNull(),
+    paymentAmountCents: integer("paymentAmountCents"),
+    currency: text("currency"),
+    packageId: text("packageId"),
     createdAt: timestamp("createdAt", { precision: 3, mode: "date" }).notNull().defaultNow(),
   },
   (table) => [

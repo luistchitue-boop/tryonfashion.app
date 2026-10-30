@@ -29,6 +29,13 @@
       "when": 1793370744412,
       "tag": "0003_special_wolfsbane",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793377015052,
+      "tag": "0004_simple_darkhawk",
+      "breakpoints": true
     }
   ]
 }

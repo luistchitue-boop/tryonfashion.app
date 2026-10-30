@@ -59,6 +59,8 @@ The signed-in `/closet/try-on` page lets the user select up to four saved Closet
 
 The signed-in `/credits` page sells one-time image-generation credit packages through Stripe Checkout. New accounts start with two free credits, each redeemable for one virtual try-on image. A verified `checkout.session.completed` webhook adds purchased credits to the user's account exactly once; returning from Checkout by itself never grants credits. Each successful image generation costs approximately $0.12 in model usage, and a failed generation is refunded. Current packs are 10 credits for $2.99, 40 for $9.99, and 100 for $19.99; these prices provide room for model and payment processing costs. Video generation is not offered. Review prices before launch.
 
+The Settings page includes a Billing tab listing the signed-in user's completed credit purchases. New Stripe-confirmed purchases store their paid amount, currency, package, and date with the credit ledger. Older purchases made before those fields were added still show in the history, but their payment amount is unavailable in the app; Stripe remains the source for receipts and formal invoices.
+
 Configure these server-only variables locally and in the deployment environment:
 
 - `STRIPE_SECRET_KEY`: Stripe secret key (`sk_test_...` for testing; `sk_live_...` for production).
