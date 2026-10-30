@@ -7,7 +7,6 @@ import { SignOutButton } from "@clerk/nextjs";
 import { ArrowUpRight, Search, SlidersHorizontal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogFooter, DialogHeader } from "@/components/ui/dialog";
 import { ITEMS_PER_PAGE, PaginationControls } from "@/components/pagination-controls";
 
 export type ClosetItem = {
@@ -35,19 +34,8 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
   const [sourceFilter, setSourceFilter] = useState("all");
   const [sortBy, setSortBy] = useState("recent");
   const [currentPage, setCurrentPage] = useState(1);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [form, setForm] = useState({
-    productUrl: "",
-    productName: "",
-    brand: "",
-    imageUrl: "",
-    price: "",
-    currency: "",
-    source: "",
-  });
 
   const sources = useMemo(
     () => Array.from(new Set(items.map((item) => item.source))).sort((a, b) => a.localeCompare(b)),
@@ -76,52 +64,6 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
   const pageCount = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
   const activePage = Math.min(currentPage, pageCount);
   const visibleItems = filteredItems.slice((activePage - 1) * ITEMS_PER_PAGE, activePage * ITEMS_PER_PAGE);
-
-  const handleAddPiece = async () => {
-    setError(null);
-    setSuccessMessage(null);
-    setIsSubmitting(true);
-
-    try {
-      const response = await fetch("/api/closet", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          productUrl: form.productUrl.trim(),
-          productName: form.productName.trim(),
-          brand: form.brand.trim(),
-          imageUrl: form.imageUrl.trim(),
-          price: form.price.trim(),
-          currency: form.currency.trim(),
-          source: form.source.trim() || "unknown",
-        }),
-      });
-
-      const payload = await response.json();
-      if (!response.ok) {
-        throw new Error(payload.error || "Unable to save this item.");
-      }
-
-      setItems((prev) => [payload.item, ...prev]);
-      setCurrentPage(1);
-      setDialogOpen(false);
-      setForm({
-        productUrl: "",
-        productName: "",
-        brand: "",
-        imageUrl: "",
-        price: "",
-        currency: "",
-        source: "",
-      });
-      setSuccessMessage("Piece added to your closet.");
-    } catch (caughtError) {
-      setError(caughtError instanceof Error ? caughtError.message : "Something went wrong.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleRemoveItem = async (id: string) => {
     const previousItems = items;
@@ -204,8 +146,10 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
                 <p className="mt-2 max-w-xl text-sm text-stone-600">Everything you&apos;ve discovered, saved, and want to try.</p>
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button onClick={() => setDialogOpen(true)} className="w-fit">
+                <Button asChild className="w-fit">
+                  <Link href="/shop">
                   Add a piece
+                  </Link>
                 </Button>
                 <SignOutButton redirectUrl="/">
                   <Button type="button" variant="secondary" className="w-fit lg:hidden">
@@ -344,64 +288,15 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
               <p className="mx-auto mt-3 max-w-md text-stone-600">
                 Find something you love on a fashion website and add it to your closet.
               </p>
-              <Button onClick={() => setDialogOpen(true)} className="mt-6">
+              <Button asChild className="mt-6">
+                <Link href="/shop">
                 Add your first piece
+                </Link>
               </Button>
             </div>
           )}
         </main>
       </div>
-
-      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <div>
-              <p className="text-xs uppercase tracking-[0.22em] text-stone-500">New piece</p>
-              <h2 className="mt-1 text-2xl font-semibold text-stone-900">Add an item to your closet</h2>
-            </div>
-          </DialogHeader>
-
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            <div className="sm:col-span-2">
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">Product URL</label>
-              <Input value={form.productUrl} onChange={(event) => setForm({ ...form, productUrl: event.target.value })} placeholder="https://..." />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">Product name</label>
-              <Input value={form.productName} onChange={(event) => setForm({ ...form, productName: event.target.value })} placeholder="Silk wrap dress" />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">Brand</label>
-              <Input value={form.brand} onChange={(event) => setForm({ ...form, brand: event.target.value })} placeholder="Brand name" />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">Source</label>
-              <Input value={form.source} onChange={(event) => setForm({ ...form, source: event.target.value })} placeholder="Selfridges" />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">Image URL</label>
-              <Input value={form.imageUrl} onChange={(event) => setForm({ ...form, imageUrl: event.target.value })} placeholder="https://..." />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">Price</label>
-              <Input value={form.price} onChange={(event) => setForm({ ...form, price: event.target.value })} placeholder="199" />
-            </div>
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-stone-700">Currency</label>
-              <Input value={form.currency} onChange={(event) => setForm({ ...form, currency: event.target.value })} placeholder="USD" />
-            </div>
-          </div>
-
-          <DialogFooter className="mt-6">
-            <Button type="button" variant="secondary" onClick={() => setDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="button" onClick={handleAddPiece} disabled={isSubmitting || !form.productUrl || !form.productName}>
-              {isSubmitting ? "Saving..." : "Save piece"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
