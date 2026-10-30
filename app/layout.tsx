@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
 
 const manrope = Manrope({
@@ -22,8 +23,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${manrope.variable} ${cormorant.variable} h-full antialiased`}>
-      <body className="min-h-full bg-stone-50 text-stone-900">
-        <ClerkProvider>{children}</ClerkProvider>
+      <body className="min-h-full bg-stone-50 text-stone-900 transition-colors duration-300">
+        <ClerkProvider>
+          {children}
+          <ThemeToggle />
+        </ClerkProvider>
       </body>
     </html>
   );

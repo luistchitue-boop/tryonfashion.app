@@ -6,6 +6,16 @@
   --muted: #5d5853;
   --card: #ffffff;
   --border: #e7e2dc;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --background: #111210;
+  --foreground: #f2efe9;
+  --muted: #aaa69e;
+  --card: #1a1b18;
+  --border: #30312c;
+  color-scheme: dark;
 }
 
 @theme inline {
@@ -49,4 +59,176 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+/* Keep the existing Tailwind stone-based design language, but remap its
+   surfaces and text when dark mode is enabled. */
+html[data-theme="dark"] body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+html[data-theme="dark"] .bg-white,
+html[data-theme="dark"] [class~="bg-white/90"] {
+  background-color: #1a1b18 !important;
+}
+
+html[data-theme="dark"] .bg-stone-50,
+html[data-theme="dark"] [class~="bg-[#f2eee9]"] {
+  background-color: #141512 !important;
+}
+
+html[data-theme="dark"] .bg-stone-100 {
+  background-color: #20211d !important;
+}
+
+html[data-theme="dark"] .bg-stone-200 {
+  background-color: #2a2b26 !important;
+}
+
+html[data-theme="dark"] .bg-stone-900 {
+  background-color: #e9e4da !important;
+  color: #1b1a17 !important;
+}
+
+html[data-theme="dark"] .bg-stone-900 .text-white,
+html[data-theme="dark"] .bg-stone-900 .text-stone-50,
+html[data-theme="dark"] .bg-stone-900.text-white,
+html[data-theme="dark"] .bg-stone-900.text-stone-50 {
+  color: #1b1a17 !important;
+}
+
+html[data-theme="dark"] .text-stone-950,
+html[data-theme="dark"] .text-stone-900,
+html[data-theme="dark"] .text-stone-800,
+html[data-theme="dark"] .text-stone-700 {
+  color: #eeeae2 !important;
+}
+
+html[data-theme="dark"] .text-stone-600 {
+  color: #c1bdb5 !important;
+}
+
+html[data-theme="dark"] .text-stone-500,
+html[data-theme="dark"] .text-stone-400 {
+  color: #a19d95 !important;
+}
+
+html[data-theme="dark"] .text-stone-300 {
+  color: #c7c2b9 !important;
+}
+
+html[data-theme="dark"] .border-stone-100,
+html[data-theme="dark"] .border-stone-200 {
+  border-color: #30312c !important;
+}
+
+html[data-theme="dark"] .border-stone-300 {
+  border-color: #454640 !important;
+}
+
+html[data-theme="dark"] .border-stone-400 {
+  border-color: #5b5c55 !important;
+}
+
+html[data-theme="dark"] .border-stone-900 {
+  border-color: #ded8ce !important;
+}
+
+html[data-theme="dark"] .divide-stone-100 > :not(:last-child) {
+  border-color: #30312c !important;
+}
+
+html[data-theme="dark"] .hover\:bg-stone-50:hover,
+html[data-theme="dark"] .hover\:bg-stone-100:hover,
+html[data-theme="dark"] .hover\:bg-white:hover {
+  background-color: #252621 !important;
+}
+
+html[data-theme="dark"] .hover\:bg-stone-200:hover {
+  background-color: #30312c !important;
+}
+
+html[data-theme="dark"] .hover\:bg-stone-700:hover {
+  background-color: #d3cdc2 !important;
+  color: #1b1a17 !important;
+}
+
+html[data-theme="dark"] .hover\:border-stone-400:hover {
+  border-color: #696a62 !important;
+}
+
+html[data-theme="dark"] .focus\:bg-white:focus,
+html[data-theme="dark"] .focus\:bg-white:focus-visible {
+  background-color: #1a1b18 !important;
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: #85867e;
+}
+
+html[data-theme="dark"] .bg-red-50 {
+  background-color: #301c1b !important;
+}
+
+html[data-theme="dark"] .border-red-200 {
+  border-color: #663b38 !important;
+}
+
+html[data-theme="dark"] .text-red-700 {
+  color: #ffaaa1 !important;
+}
+
+html[data-theme="dark"] .bg-emerald-50 {
+  background-color: #172a22 !important;
+}
+
+html[data-theme="dark"] .border-emerald-200 {
+  border-color: #315944 !important;
+}
+
+html[data-theme="dark"] .text-emerald-800,
+html[data-theme="dark"] .text-emerald-900 {
+  color: #a6e2bc !important;
+}
+
+html[data-theme="dark"] .bg-amber-50 {
+  background-color: #302719 !important;
+}
+
+html[data-theme="dark"] .border-amber-200 {
+  border-color: #61502f !important;
+}
+
+html[data-theme="dark"] .text-amber-900 {
+  color: #f0d093 !important;
+}
+
+html[data-theme="dark"] .shadow-sm,
+html[data-theme="dark"] .shadow-md,
+html[data-theme="dark"] .shadow-lg,
+html[data-theme="dark"] .shadow-xl,
+html[data-theme="dark"] .shadow-2xl {
+  --tw-shadow-color: rgb(0 0 0 / 0.35);
+}
+
+html[data-theme="dark"] ::selection {
+  color: #171613;
+  background: #d8cbb5;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body,
+  body * {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 180ms;
+    transition-timing-function: ease-out;
+  }
 }
