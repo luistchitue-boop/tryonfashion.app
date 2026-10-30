@@ -57,7 +57,7 @@ The signed-in `/closet/try-on` page lets the user select up to four saved Closet
 
 ## Stripe credits
 
-The signed-in `/credits` page sells one-time credit packages through Stripe Checkout. New accounts start with two free credits. A verified `checkout.session.completed` webhook adds the credits to the user's account exactly once; returning from Checkout by itself never grants credits. Image generation reserves one credit and a failed generation is refunded. Video generation is not implemented yet; the initial pricing table reserves a five-credit cost for when that capability is added. Package prices and usage costs are initial defaults in `lib/credit-plans.ts` and should be reviewed before launch.
+The signed-in `/credits` page sells one-time image-generation credit packages through Stripe Checkout. New accounts start with two free credits, each redeemable for one virtual try-on image. A verified `checkout.session.completed` webhook adds purchased credits to the user's account exactly once; returning from Checkout by itself never grants credits. Each successful image generation costs approximately $0.12 in model usage, and a failed generation is refunded. Current packs are 10 credits for $2.99, 40 for $9.99, and 100 for $19.99; these prices provide room for model and payment processing costs. Video generation is not offered. Review prices before launch.
 
 Configure these server-only variables locally and in the deployment environment:
 

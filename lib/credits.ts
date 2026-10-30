@@ -2,11 +2,10 @@ import { sql } from "drizzle-orm";
 import { getDb } from "@/lib/db";
 import { CREDIT_COSTS } from "@/lib/credit-plans";
 
-export type CreditUsage = "image_generation" | "video_generation";
+export type CreditUsage = "image_generation";
 
 const usageCosts: Record<CreditUsage, number> = {
   image_generation: CREDIT_COSTS.imageGeneration,
-  video_generation: CREDIT_COSTS.videoGeneration,
 };
 
 export function creditCostFor(usage: CreditUsage) {
