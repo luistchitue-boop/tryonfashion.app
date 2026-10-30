@@ -8,6 +8,7 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getDb } from "@/lib/db";
+import { creditCostFor, debitCredits, refundCredits } from "@/lib/credits";
 import { galleryPhotos, savedItems } from "@/lib/db/schema";
 
 export const runtime = "nodejs";
@@ -150,13 +151,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "This gallery photo format is not supported for try-on yet." }, { status: 400 });
   }
 
+  const creditReference = `image-generation:${crypto.randomUUID()}`;
+  const imageCreditCost = creditCostFor("image_generation");
+  const hasCredits = await debitCredits(user.id, "image_generation", creditReference);
+  if (!hasCredits) {
+    return NextResponse.json({ error: `You need ${imageCreditCost} credit${imageCreditCost === 1 ? "" : "s"} to create a try-on. Add credits to continue.`, code: "INSUFFICIENT_CREDITS" }, { status: 402 });
+  }
+
   try {
     const [blob, productImage] = await Promise.all([
       get(photo.pathname, { access: "private" }),
       fetchProductImage(item.imageUrl),
     ]);
     if (!blob || blob.statusCode !== 200 || !blob.stream) {
-      return NextResponse.json({ error: "Could not load your selected gallery photo." }, { status: 404 });
+      throw new Error("Could not load your selected gallery photo.");
     }
     const photoBytes = new Uint8Array(await new Response(blob.stream).arrayBuffer());
     const [modelPhoto, modelProduct] = await Promise.all([
@@ -181,6 +189,9 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    await refundCredits(user.id, "image_generation", creditReference).catch((refundError) => {
+      console.error("Could not refund failed try-on credits", refundError instanceof Error ? refundError.message : "Unknown error");
+    });
     console.error("Virtual try-on generation failed", error instanceof Error ? error.message : "Unknown error");
     const message = error instanceof Error && /public HTTPS|publicly reachable|too large|JPEG, PNG|invalid product image|timed out|could not be retrieved/i.test(error.message)
       ? error.message

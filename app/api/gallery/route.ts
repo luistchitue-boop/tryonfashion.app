@@ -3,6 +3,7 @@ import { desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getDb } from "@/lib/db";
+import { creditCostFor, debitCredits, refundCredits } from "@/lib/credits";
 import { galleryPhotos } from "@/lib/db/schema";
 
 export const runtime = "nodejs";
@@ -52,14 +53,21 @@ export async function POST(request: Request) {
   const id = crypto.randomUUID();
   const pathname = `gallery/${user.id}/${id}.${extensionByType[file.type]}`;
   const originalName = file.name.replace(/[\\/\0-\x1f]/g, "_").slice(0, 160) || `photo.${extensionByType[file.type]}`;
+  const creditReference = `gallery-upload:${id}`;
+  const galleryCreditCost = creditCostFor("gallery_upload");
+  const hasCredits = await debitCredits(user.id, "gallery_upload", creditReference);
+  if (!hasCredits) {
+    return NextResponse.json({ error: `You need ${galleryCreditCost} credit${galleryCreditCost === 1 ? "" : "s"} to upload a gallery photo. Add credits to continue.`, code: "INSUFFICIENT_CREDITS" }, { status: 402 });
+  }
 
-  const blob = await put(pathname, file, {
-    access: "private",
-    contentType: file.type,
-    addRandomSuffix: true,
-  });
-
+  let uploadedPathname: string | null = null;
   try {
+    const blob = await put(pathname, file, {
+      access: "private",
+      contentType: file.type,
+      addRandomSuffix: true,
+    });
+    uploadedPathname = blob.pathname;
     const [photo] = await getDb()
       .insert(galleryPhotos)
       .values({ id, userId: user.id, pathname: blob.pathname, filename: originalName, contentType: file.type })
@@ -67,7 +75,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ photo }, { status: 201 });
   } catch (error) {
-    await del(blob.pathname).catch(() => undefined);
+    if (uploadedPathname) await del(uploadedPathname).catch(() => undefined);
+    await refundCredits(user.id, "gallery_upload", creditReference).catch((refundError) => {
+      console.error("Could not refund failed gallery upload credits", refundError instanceof Error ? refundError.message : "Unknown error");
+    });
     throw error;
   }
 }

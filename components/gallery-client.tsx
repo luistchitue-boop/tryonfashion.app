@@ -94,6 +94,7 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
             <Link href="/" className="block rounded-xl px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100">Discover</Link>
             <Link href="/closet/try-on" className="block rounded-xl px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100">Try On</Link>
             <Link href="/shop" className="block rounded-xl px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100">Shop</Link>
+            <Link href="/credits" className="block rounded-xl px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100">Credits</Link>
           </nav>
           <div className="mt-10 rounded-2xl border border-stone-200 bg-stone-50 p-4">
             <div className="flex items-center gap-3">
@@ -143,10 +144,11 @@ export function GalleryClient({ initialPhotos, userName, userImage }: GalleryCli
               <Link href="/" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Discover</Link>
               <Link href="/closet/try-on" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Try On</Link>
               <Link href="/shop" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Shop</Link>
+              <Link href="/credits" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Credits</Link>
             </nav>
           </header>
 
-          {error && <p role="alert" className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+          {error && <div role="alert" className="mb-5 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"><p>{error}</p>{error.toLowerCase().includes("credit") && <Link href="/credits" className="mt-2 inline-flex font-semibold underline">Get credits</Link>}</div>}
 
           {photos.length ? (
             <>

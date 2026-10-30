@@ -56,6 +56,18 @@ Connect a Vercel Blob store to the project and enable it for Production, Preview
 
 The signed-in `/closet/try-on` page pairs one of the user's Gallery photos with a saved Closet item that has a product image. It sends the two images to Google's Gemini 3 Pro Image model through Vercel AI Gateway and returns an ephemeral preview; generated images are not persisted. Add an `AI_GATEWAY_API_KEY` from your Vercel AI Gateway settings to local `.env`. For Vercel deployments, configure an AI Gateway key or the supported Vercel OIDC integration. Each request is authenticated, checks ownership of both selected records, and fetches only public HTTPS product images.
 
+## Stripe credits
+
+The signed-in `/credits` page sells one-time credit packages through Stripe Checkout. A verified `checkout.session.completed` webhook adds the credits to the user's account exactly once; returning from Checkout by itself never grants credits. Image generation reserves one credit, and a failed generation is refunded. Uploading a gallery photo costs one credit, and failed uploads are refunded. Deleting a photo does not refund its upload credit. Video generation is not implemented yet; the initial pricing table reserves a five-credit cost for when that capability is added. Package prices and usage costs are initial defaults in `lib/credit-plans.ts` and should be reviewed before launch.
+
+Configure these server-only variables locally and in the deployment environment:
+
+- `STRIPE_SECRET_KEY`: Stripe secret key (`sk_test_...` for testing; `sk_live_...` for production).
+- `STRIPE_WEBHOOK_SECRET`: webhook signing secret (`whsec_...`). Configure a webhook endpoint at `/api/stripe/webhook` for `checkout.session.completed`.
+- `APP_URL`: canonical site origin used for Checkout return URLs (for example `http://localhost:3000` locally, and your HTTPS production origin when deployed).
+
+Never expose Stripe secrets through `NEXT_PUBLIC_*` variables or commit real credentials. Apply the Drizzle migration before enabling checkout. Test purchases with Stripe test mode and confirm webhook delivery before switching to live payments.
+
 ## CJ product catalog
 
 The `/shop` page searches live shopping products from joined fashion advertisers available to the publisher account through CJ's Product Feed GraphQL API. It supports women's/men's discovery, keyword search, pagination, product cards, tracked CJ links, and saving products to a user's Closet. Catalog responses are briefly cached for 15 minutes; product and advertiser availability remains controlled by CJ and each advertiser.

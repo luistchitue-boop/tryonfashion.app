@@ -171,6 +171,9 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
             <Link href="/shop" className="block rounded-xl px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100">
               Shop
             </Link>
+            <Link href="/credits" className="block rounded-xl px-3 py-2.5 text-sm text-stone-700 transition hover:bg-stone-100">
+              Credits
+            </Link>
           </nav>
 
           <div className="mt-10 rounded-2xl border border-stone-200 bg-stone-50 p-4">
@@ -221,6 +224,7 @@ export function ClosetClient({ initialItems, userName, userImage }: ClosetClient
               <Link href="/" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Discover</Link>
               <Link href="/closet/try-on" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Try On</Link>
               <Link href="/shop" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Shop</Link>
+              <Link href="/credits" className="rounded-full border border-stone-200 px-3 py-2 text-sm text-stone-700 sm:px-4">Credits</Link>
             </nav>
 
             <div className="flex min-w-0 flex-col gap-3 border-t border-stone-200 pt-4 md:flex-row md:items-center md:justify-between">
