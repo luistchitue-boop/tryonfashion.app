@@ -3,18 +3,18 @@ import { isIP } from "node:net";
 import { request as httpsRequest } from "node:https";
 import { generateImage } from "ai";
 import sharp from "sharp";
-import { get } from "@vercel/blob";
-import { eq } from "drizzle-orm";
+import { inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getDb } from "@/lib/db";
 import { creditCostFor, debitCredits, refundCredits } from "@/lib/credits";
-import { galleryPhotos, savedItems } from "@/lib/db/schema";
+import { savedItems } from "@/lib/db/schema";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
 const MAX_PRODUCT_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_PERSON_IMAGE_BYTES = 4 * 1024 * 1024;
 const supportedImageTypes = new Set(["image/jpeg", "image/png", "image/webp", "image/avif"]);
 
 async function toModelJpeg(image: Uint8Array) {
@@ -126,29 +126,42 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "AI image generation is not configured for this deployment." }, { status: 503 });
   }
 
-  let body: unknown;
+  let formData: FormData;
   try {
-    body = await request.json();
+    formData = await request.formData();
   } catch {
-    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+    return NextResponse.json({ error: "Upload a photo and select up to four closet pieces." }, { status: 400 });
   }
-  if (!body || typeof body !== "object" || !("itemId" in body) || !("photoId" in body) || typeof body.itemId !== "string" || typeof body.photoId !== "string") {
-    return NextResponse.json({ error: "Choose a closet piece and a gallery photo." }, { status: 400 });
+  const uploadedPhoto = formData.get("photo");
+  const rawItemIds = formData.get("itemIds");
+  if (!(uploadedPhoto instanceof File) || typeof rawItemIds !== "string") {
+    return NextResponse.json({ error: "Upload a photo and select up to four closet pieces." }, { status: 400 });
+  }
+  let itemIds: unknown;
+  try {
+    itemIds = JSON.parse(rawItemIds);
+  } catch {
+    return NextResponse.json({ error: "Choose between one and four closet pieces." }, { status: 400 });
+  }
+  if (!Array.isArray(itemIds) || itemIds.length < 1 || itemIds.length > 4 || itemIds.some((id) => typeof id !== "string") || new Set(itemIds).size !== itemIds.length) {
+    return NextResponse.json({ error: "Choose between one and four different closet pieces." }, { status: 400 });
+  }
+  if (!supportedImageTypes.has(uploadedPhoto.type)) {
+    return NextResponse.json({ error: "Upload a JPEG, PNG, WebP, or AVIF photo." }, { status: 400 });
+  }
+  if (uploadedPhoto.size === 0 || uploadedPhoto.size > MAX_PERSON_IMAGE_BYTES) {
+    return NextResponse.json({ error: "Your photo must be smaller than 4 MB." }, { status: 400 });
   }
 
   const db = getDb();
-  const [[item], [photo]] = await Promise.all([
-    db.select({ imageUrl: savedItems.imageUrl, productName: savedItems.productName, userId: savedItems.userId })
-      .from(savedItems).where(eq(savedItems.id, body.itemId)).limit(1),
-    db.select({ pathname: galleryPhotos.pathname, contentType: galleryPhotos.contentType, userId: galleryPhotos.userId })
-      .from(galleryPhotos).where(eq(galleryPhotos.id, body.photoId)).limit(1),
-  ]);
-  if (!item || item.userId !== user.id || !photo || photo.userId !== user.id) {
-    return NextResponse.json({ error: "That closet piece or gallery photo is unavailable." }, { status: 404 });
+  const items = await db.select({ id: savedItems.id, imageUrl: savedItems.imageUrl, productName: savedItems.productName, userId: savedItems.userId })
+    .from(savedItems).where(inArray(savedItems.id, itemIds as string[]));
+  if (items.length !== itemIds.length || items.some((item) => item.userId !== user.id)) {
+    return NextResponse.json({ error: "One or more selected closet pieces are unavailable." }, { status: 404 });
   }
-  if (!item.imageUrl) return NextResponse.json({ error: "This closet piece does not have a product image." }, { status: 400 });
-  if (!supportedImageTypes.has(photo.contentType)) {
-    return NextResponse.json({ error: "This gallery photo format is not supported for try-on yet." }, { status: 400 });
+  const selectedItems = itemIds.map((id) => items.find((item) => item.id === id)!);
+  if (selectedItems.some((item) => !item.imageUrl)) {
+    return NextResponse.json({ error: "Each selected closet piece needs a product image." }, { status: 400 });
   }
 
   const creditReference = `image-generation:${crypto.randomUUID()}`;
@@ -159,25 +172,19 @@ export async function POST(request: Request) {
   }
 
   try {
-    const [blob, productImage] = await Promise.all([
-      get(photo.pathname, { access: "private" }),
-      fetchProductImage(item.imageUrl),
-    ]);
-    if (!blob || blob.statusCode !== 200 || !blob.stream) {
-      throw new Error("Could not load your selected gallery photo.");
-    }
-    const photoBytes = new Uint8Array(await new Response(blob.stream).arrayBuffer());
-    const [modelPhoto, modelProduct] = await Promise.all([
+    const photoBytes = new Uint8Array(await uploadedPhoto.arrayBuffer());
+    const [modelPhoto, ...modelProducts] = await Promise.all([
       toModelJpeg(photoBytes),
-      toModelJpeg(productImage.data),
+      ...selectedItems.map(async (item) => toModelJpeg((await fetchProductImage(item.imageUrl!)).data)),
     ]);
+    const clothingDescription = selectedItems.map((item, index) => `${index + 1}. ${item.productName}`).join("; ");
 
     const result = await generateImage({
       model: "microsoft/mai-image-2.6-flash",
       abortSignal: AbortSignal.timeout(105_000),
       prompt: {
-        text: `Create a photorealistic virtual try-on using the two reference images. The first image is the user's personal photo; preserve their identity, face, body shape, pose, skin tone, hair, background, and camera framing. The second image shows the clothing item: faithfully reproduce its garment, color, pattern, material, cut, and details, and naturally dress the person in it. Do not add text, accessories, or unrelated clothing. The item is: ${item.productName}. Return one finished image.`,
-        images: [modelPhoto, modelProduct],
+        text: `Create one photorealistic virtual try-on using the reference images. The first image is the user's personal photo; preserve their identity, face, body shape, pose, skin tone, hair, background, and camera framing. The remaining images show the clothing pieces in the listed order: ${clothingDescription}. Faithfully reproduce each garment's color, pattern, material, cut, and details, and style the person wearing all selected pieces together naturally. Do not add text, accessories, or unrelated clothing. Return one finished image.`,
+        images: [modelPhoto, ...modelProducts],
       },
     });
 

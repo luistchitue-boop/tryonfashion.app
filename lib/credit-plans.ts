@@ -9,7 +9,6 @@ export type CreditPackageId = (typeof CREDIT_PACKAGES)[number]["id"];
 export const CREDIT_COSTS = {
   imageGeneration: 1,
   videoGeneration: 5,
-  galleryUpload: 1,
 } as const;
 
 export function getCreditPackage(id: string) {

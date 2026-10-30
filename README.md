@@ -33,7 +33,6 @@ Required variables:
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_replace-with-your-clerk-publishable-key
 CLERK_SECRET_KEY=sk_test_replace-with-your-clerk-secret-key
 DATABASE_URL=your-neon-postgres-connection-string
-BLOB_READ_WRITE_TOKEN=provided-by-vercel-blob
 AI_GATEWAY_API_KEY=your-vercel-ai-gateway-key
 ```
 
@@ -48,17 +47,17 @@ npm run db:migrate
 
 Vercel runs the same migration automatically through `npm run vercel-build`. The initial migration creates the app's tables, including `User` and `SavedItem`.
 
-## Personal photo gallery
+## Virtual Try-On photo uploads
 
-Connect a Vercel Blob store to the project and enable it for Production, Preview, and Development as needed. Vercel provides `BLOB_READ_WRITE_TOKEN` (or its OIDC Blob connection variables) automatically. Gallery uploads are private, tied to the signed-in user in Neon, and served back through an authenticated route. Users can upload JPEG, PNG, WebP, or AVIF photos up to 4 MB each, preview them, and delete them. The Drizzle migration adds the `GalleryPhoto` table.
+Virtual Try-On accepts a JPEG, PNG, WebP, or AVIF photo up to 4 MB with each generation request. The photo is processed in memory and sent to the AI provider with up to four selected closet-item images; it is not stored by the app.
 
 ## Virtual Try-On
 
-The signed-in `/closet/try-on` page pairs one of the user's Gallery photos with a saved Closet item that has a product image. It sends the two images to Google's Gemini 3 Pro Image model through Vercel AI Gateway and returns an ephemeral preview; generated images are not persisted. Add an `AI_GATEWAY_API_KEY` from your Vercel AI Gateway settings to local `.env`. For Vercel deployments, configure an AI Gateway key or the supported Vercel OIDC integration. Each request is authenticated, checks ownership of both selected records, and fetches only public HTTPS product images.
+The signed-in `/closet/try-on` page lets the user select up to four saved Closet items that have product images and upload a photo for a single generation. It sends the photo and clothing images to the image model through Vercel AI Gateway and returns an ephemeral preview; neither source photos nor generated images are persisted. Add an `AI_GATEWAY_API_KEY` from your Vercel AI Gateway settings to local `.env`. For Vercel deployments, configure an AI Gateway key or the supported Vercel OIDC integration. Each request is authenticated, validates ownership of all selected items, and fetches only public HTTPS product images.
 
 ## Stripe credits
 
-The signed-in `/credits` page sells one-time credit packages through Stripe Checkout. A verified `checkout.session.completed` webhook adds the credits to the user's account exactly once; returning from Checkout by itself never grants credits. Image generation reserves one credit, and a failed generation is refunded. Uploading a gallery photo costs one credit, and failed uploads are refunded. Deleting a photo does not refund its upload credit. Video generation is not implemented yet; the initial pricing table reserves a five-credit cost for when that capability is added. Package prices and usage costs are initial defaults in `lib/credit-plans.ts` and should be reviewed before launch.
+The signed-in `/credits` page sells one-time credit packages through Stripe Checkout. New accounts start with two free credits. A verified `checkout.session.completed` webhook adds the credits to the user's account exactly once; returning from Checkout by itself never grants credits. Image generation reserves one credit and a failed generation is refunded. Video generation is not implemented yet; the initial pricing table reserves a five-credit cost for when that capability is added. Package prices and usage costs are initial defaults in `lib/credit-plans.ts` and should be reviewed before launch.
 
 Configure these server-only variables locally and in the deployment environment:
 

@@ -18,7 +18,7 @@ export const users = pgTable(
     email: text("email"),
     emailVerified: timestamp("emailVerified", { precision: 3, mode: "date" }),
     image: text("image"),
-    creditBalance: integer("creditBalance").notNull().default(0),
+    creditBalance: integer("creditBalance").notNull().default(2),
     createdAt: timestamp("createdAt", { precision: 3, mode: "date" }).notNull().defaultNow(),
     updatedAt: timestamp("updatedAt", { precision: 3, mode: "date" }).notNull().defaultNow(),
   },
@@ -93,21 +93,6 @@ export const savedItems = pgTable(
     index("SavedItem_userId_createdAt_idx").on(table.userId, table.createdAt),
     index("SavedItem_userId_productName_idx").on(table.userId, table.productName),
   ],
-);
-
-export const galleryPhotos = pgTable(
-  "GalleryPhoto",
-  {
-    id: text("id").primaryKey(),
-    userId: text("userId")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" }),
-    pathname: text("pathname").notNull().unique(),
-    filename: text("filename").notNull(),
-    contentType: text("contentType").notNull(),
-    createdAt: timestamp("createdAt", { precision: 3, mode: "date" }).notNull().defaultNow(),
-  },
-  (table) => [index("GalleryPhoto_userId_createdAt_idx").on(table.userId, table.createdAt)],
 );
 
 export const creditTransactions = pgTable(

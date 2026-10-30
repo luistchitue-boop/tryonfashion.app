@@ -42,7 +42,6 @@ export default function ShopPage() {
           <Link href="/" className="text-base font-semibold tracking-[0.16em] text-stone-900">TRYONFASHION</Link>
           <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-5 gap-y-2">
             <Link href="/closet">My Closet</Link>
-            <Link href="/closet/gallery">Gallery</Link>
             <Link href="/closet/try-on">Try On</Link>
             <Link href="/privacy">Privacy</Link>
             <Link href="/terms">Terms</Link>

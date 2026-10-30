@@ -52,7 +52,7 @@ export function CreditsClient({ initialBalance, checkoutStatus }: CreditsClientP
       <header className="mt-6 rounded-3xl border border-stone-200 bg-white p-6 shadow-sm sm:p-9">
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-stone-500">Your creative balance</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">Credits</h1>
-        <p className="mt-3 text-sm leading-6 text-stone-600">Use credits for AI try-ons, video generation when available, and gallery uploads.</p>
+        <p className="mt-3 text-sm leading-6 text-stone-600">Use credits for AI try-ons and video generation when it becomes available.</p>
         <div className="mt-6 flex flex-wrap items-end gap-x-3 gap-y-1">
           <span className="text-4xl font-semibold tabular-nums">{balance.toLocaleString()}</span>
           <span className="pb-1 text-sm text-stone-500">credits available</span>
@@ -89,9 +89,9 @@ export function CreditsClient({ initialBalance, checkoutStatus }: CreditsClientP
         <ul className="mt-4 grid gap-3 text-sm text-stone-600 sm:grid-cols-3">
           <li className="rounded-2xl bg-stone-50 p-4"><span className="font-semibold text-stone-900">{CREDIT_COSTS.imageGeneration} credit</span> per virtual try-on image</li>
           <li className="rounded-2xl bg-stone-50 p-4"><span className="font-semibold text-stone-900">{CREDIT_COSTS.videoGeneration} credits</span> per video generation (feature not yet available)</li>
-          <li className="rounded-2xl bg-stone-50 p-4"><span className="font-semibold text-stone-900">{CREDIT_COSTS.galleryUpload} credit</span> per uploaded gallery photo</li>
+          <li className="rounded-2xl bg-stone-50 p-4"><span className="font-semibold text-stone-900">Free starter balance</span> 2 credits for new accounts</li>
         </ul>
-        <p className="mt-4 text-xs leading-5 text-stone-500">Pack pricing and usage rates are initial defaults and should be reviewed before launch. Purchased credits are non-transferable and are not refunded when you delete a gallery photo.</p>
+        <p className="mt-4 text-xs leading-5 text-stone-500">Pack pricing and usage rates are initial defaults and should be reviewed before launch. Uploaded try-on photos are used for that request only and are not saved to the app.</p>
       </section>
     </main>
   );
