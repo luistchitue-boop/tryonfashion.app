@@ -5,7 +5,7 @@ const sections = [
     title: "1. About these Terms",
     paragraphs: [
       "These Terms of Service (the “Terms”) govern your access to and use of TryOnFashion, including our website, digital closet, product discovery pages, virtual try-on tools, account settings, and browser extension (together, the “Service”). By creating an account, accessing, or using the Service, you agree to these Terms. If you do not agree, do not use the Service.",
-      "TryOnFashion is operated by [insert the legal name of the operating business] (“TryOnFashion,” “we,” “us,” or “our”). Replace this operator information and the contact details on our Privacy Policy before publishing these Terms.",
+      "TryOnFashion is operated by VITERBI LLC (“TryOnFashion,” “we,” “us,” or “our”).",
     ],
   },
   {
@@ -43,7 +43,7 @@ const sections = [
     paragraphs: [
       "New accounts currently receive two complimentary credits. A successful virtual try-on image currently uses one credit. Credit amounts, package prices, and feature costs are displayed in the Service and may change prospectively. Credits are for use in TryOnFashion only; they are not money, have no cash value, and may not be transferred or resold. Credits are not currently subject to an automatic expiration date, but they may become unusable if your account is closed or the Service is discontinued, subject to any rights that cannot be limited by law.",
       "Paid credit packages are one-time purchases processed by Stripe Checkout; they are not subscriptions. Stripe collects and processes payment details under its own terms and privacy policy. We do not receive or store your full card number or security code. Your purchase is complete when Stripe confirms payment and credits are added to your account. The billing tab shows purchase details recorded by our system; Stripe is the source for receipts and formal payment records.",
-      "If an image-generation request fails after a credit is charged, our current system attempts to return that credit. This is a credit adjustment, not necessarily a refund to your payment method. Refunds, cancellations, and any mandatory consumer rights are governed by applicable law. For a billing question or suspected duplicate charge, contact [insert support email] and include the transaction date and amount; do not send full card details.",
+      "If an image-generation request fails after a credit is charged, our current system attempts to return that credit. This is a credit adjustment, not necessarily a refund to your payment method. Refunds, cancellations, and any mandatory consumer rights are governed by applicable law. For a billing question or suspected duplicate charge, contact support@tryonfashion.app and include the transaction date and amount; do not send full card details.",
     ],
   },
   {
@@ -69,7 +69,7 @@ const sections = [
     title: "10. Changes and contact",
     paragraphs: [
       "We may update these Terms as the Service or applicable requirements change. We will update the date below when we do. Where required by law, we will provide additional notice or obtain consent. Continued use after an update takes effect means you accept the revised Terms, to the extent permitted by law.",
-      "These Terms are governed by the laws of [insert governing jurisdiction], without limiting mandatory consumer protections that apply where you live. Courts and dispute procedures will be determined under applicable law. Before publication, insert the operator's legal name, governing jurisdiction, and a working support contact. Contact: [insert support email and mailing address].",
+      "These Terms are governed by the laws of the State of Delaware, United States, without limiting mandatory consumer protections that apply where you live. Any court proceedings will be brought in a court of competent jurisdiction in Delaware, unless applicable law requires otherwise. For support, contact VITERBI LLC at support@tryonfashion.app or 16192 Coastal Highway, Lewes, Delaware.",
     ],
   },
 ];

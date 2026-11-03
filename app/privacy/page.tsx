@@ -4,8 +4,8 @@ const sections = [
   {
     title: "1. Who we are and scope",
     paragraphs: [
-      "This Privacy Policy explains how TryOnFashion (“TryOnFashion,” “we,” “us,” or “our”) collects, uses, discloses, and safeguards information when you use our website, digital closet, product discovery service, virtual try-on feature, and browser extension (the “Service”). The Service is operated by [insert the legal name of the operating business].",
-      "This policy describes our practices, not the independent practices of merchants, affiliate networks, identity providers, payment processors, hosting providers, or AI providers. Their own privacy notices apply to their services. Please replace the operator and contact placeholders below before publishing this policy.",
+      "This Privacy Policy explains how VITERBI LLC (“TryOnFashion,” “we,” “us,” or “our”) collects, uses, discloses, and safeguards information when you use our website, digital closet, product discovery service, virtual try-on feature, and browser extension (the “Service”). VITERBI LLC is the operator of TryOnFashion.",
+      "This policy describes our practices, not the independent practices of merchants, affiliate networks, identity providers, payment processors, hosting providers, or AI providers. Their own privacy notices apply to their services.",
     ],
   },
   {
@@ -58,7 +58,7 @@ const sections = [
     title: "7. Retention and deletion",
     paragraphs: [
       "We keep account information while your account is active. Saved closet items remain until you remove them or delete your account. Credit-ledger records are associated with your account to maintain balances and transaction history. Uploaded try-on photos and generated results are not stored in the TryOnFashion account database by the current Service, but the AI gateway/model provider may retain request data under its own practices. Catalog cache entries generally expire after about 15 minutes.",
-      "You may delete your account from Settings. When the request succeeds, we delete the Clerk sign-in and the associated primary TryOnFashion account record; database relationships are configured to cascade-delete closet and credit-ledger records. This does not erase records that Stripe or other providers must retain for legal, financial, fraud-prevention, or security purposes, nor does it immediately remove residual copies from provider backups or operational logs that are subject to their own retention cycles. If account deletion fails or you need help with a privacy request, contact [insert privacy contact email].",
+      "You may delete your account from Settings. When the request succeeds, we delete the Clerk sign-in and the associated primary TryOnFashion account record; database relationships are configured to cascade-delete closet and credit-ledger records. This does not erase records that Stripe or other providers must retain for legal, financial, fraud-prevention, or security purposes, nor does it immediately remove residual copies from provider backups or operational logs that are subject to their own retention cycles. If account deletion fails or you need help with a privacy request, contact support@tryonfashion.app.",
     ],
   },
   {
@@ -70,7 +70,7 @@ const sections = [
   {
     title: "9. International processing and your privacy rights",
     paragraphs: [
-      "Our providers may process information in countries other than the country where you live. Where applicable law requires safeguards for international transfers, we and our providers rely on an appropriate transfer mechanism. Data-protection rights vary by location and may include rights to access, correct, delete, restrict, object to, or obtain a copy of personal data, and to withdraw consent where processing relies on consent. You may manage closet items and delete your account in the Service, or submit a privacy request using [insert privacy contact email]. We may need to verify your identity and may retain information where the law permits or requires it. You may also have the right to complain to your local data-protection authority.",
+      "Our providers may process information in countries other than the country where you live. Where applicable law requires safeguards for international transfers, we and our providers rely on an appropriate transfer mechanism. Data-protection rights vary by location and may include rights to access, correct, delete, restrict, object to, or obtain a copy of personal data, and to withdraw consent where processing relies on consent. You may manage closet items and delete your account in the Service, or submit a privacy request using support@tryonfashion.app. We may need to verify your identity and may retain information where the law permits or requires it. You may also have the right to complain to your local data-protection authority.",
       "If you are in a U.S. state with a comprehensive privacy law, you may have additional rights, including to know/access, correct, delete, or obtain a portable copy of covered personal information and to opt out of certain sales, sharing, or targeted advertising. We do not sell personal information or use it for cross-context behavioral advertising as described above. We will not discriminate against you for exercising a privacy right. These rights and exceptions depend on the law that applies to you.",
       "The Service is intended for adults and is not directed to children under 18. We do not knowingly seek to collect personal information from children under 18. If you believe a child has provided information, contact us so we can review and take appropriate action.",
     ],
@@ -79,7 +79,7 @@ const sections = [
     title: "10. Changes and contact",
     paragraphs: [
       "We may update this Privacy Policy when our practices, providers, or legal obligations change. We will revise the effective date and provide additional notice or obtain consent where required. Continued use of the Service after an update takes effect is subject to the revised policy to the extent permitted by law.",
-      "Privacy contact: [insert privacy contact email]. Data controller/operator: [insert legal business name and mailing address]. Before publication, complete these contact details and confirm the named providers, applicable jurisdiction, data-retention periods, and AI-provider terms against your actual production configuration. For general Service terms, see our Terms of Service.",
+      "Privacy contact: VITERBI LLC at support@tryonfashion.app or 16192 Coastal Highway, Lewes, Delaware. Confirm the applicable jurisdiction, data-retention periods, and AI-provider terms against your actual production configuration. For general Service terms, see our Terms of Service.",
     ],
   },
 ];
